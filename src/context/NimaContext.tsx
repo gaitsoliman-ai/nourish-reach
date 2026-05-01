@@ -131,6 +131,11 @@ const seedDonations = (): Donation[] => {
       expiresAt: now + 90 * 60 * 1000,
       createdAt: now - 12 * 60 * 1000,
       status: "AVAILABLE",
+      foodCategory: "EVENT_LEFTOVERS",
+      packaging: "CONTAINER",
+      allergens: ["Gluten", "Dairy"],
+      hygieneNotes: "Transferred to closed catering trays right after service.",
+      location: { lat: 24.7600, lng: 46.6500, area: "Marina district", notes: "Hotel staff entrance, parking lot B" },
     },
     {
       id: rid(),
@@ -144,6 +149,11 @@ const seedDonations = (): Donation[] => {
       expiresAt: now + 30 * 60 * 1000,
       createdAt: now - 2 * 60 * 1000,
       status: "AVAILABLE",
+      foodCategory: "PREPARED_HOT",
+      packaging: "CONTAINER",
+      allergens: ["Dairy"],
+      hygieneNotes: "Freshly cooked, sealed in clean containers.",
+      location: { lat: 24.6900, lng: 46.7100, area: "Olive Park neighborhood", notes: "Building 7, ground floor" },
     },
   ];
 };
