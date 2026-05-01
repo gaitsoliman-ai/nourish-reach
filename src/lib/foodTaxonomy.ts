@@ -44,3 +44,15 @@ export const emojiForCategory = (c?: FoodCategory) =>
   FOOD_CATEGORIES.find((f) => f.value === c)?.emoji ?? "🍽️";
 export const labelForPackaging = (p?: Packaging) =>
   PACKAGING_OPTIONS.find((x) => x.value === p)?.label ?? "—";
+
+const CATEGORY_PHOTOS: Record<FoodCategory, string> = {
+  FRESH_END_OF_DAY: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=70&auto=format&fit=crop",
+  PREPARED_HOT: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=70&auto=format&fit=crop",
+  BAKED: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=70&auto=format&fit=crop",
+  PRODUCE: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=70&auto=format&fit=crop",
+  FROZEN: "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=800&q=70&auto=format&fit=crop",
+  PACKAGED_NEAR_EXPIRY: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800&q=70&auto=format&fit=crop",
+  EVENT_LEFTOVERS: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=70&auto=format&fit=crop",
+};
+export const photoForCategory = (c?: FoodCategory) =>
+  (c && CATEGORY_PHOTOS[c]) || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=70&auto=format&fit=crop";
