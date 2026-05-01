@@ -108,6 +108,22 @@ export default function BeneficiaryHome() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Exit anonymously?"
+        description={
+          active
+            ? "You have an active claim — leaving now will cancel it and free the meal for someone else."
+            : "Your anonymous code will be cleared. You can always come back and get a new one."
+        }
+        confirmLabel="Exit"
+        destructive
+        onConfirm={() => {
+          logout();
+          navigate("/");
+        }}
+      />
     </MobileFrame>
   );
 }
