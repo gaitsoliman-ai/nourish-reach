@@ -13,20 +13,26 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 22 95% 53%;
+    --primary: 16 100% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 28 100% 65%;
+    --primary-glow: 16 100% 70%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 224 76% 48%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 215 20% 92%;
+    --muted-foreground: 215 19% 35%;
 
-    --accent: 211 100% 50%;
+    --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
+    --tertiary: 160 84% 39%;
+    --tertiary-foreground: 0 0% 100%;
+
+    --neutral: 215 19% 35%;
+    --neutral-foreground: 0 0% 100%;
+
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
