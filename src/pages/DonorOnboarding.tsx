@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Store, Heart } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { TopBar } from "@/components/TopBar";
@@ -13,6 +13,8 @@ export default function DonorOnboarding() {
   const [name, setName] = useState("");
   const [type, setType] = useState("Restaurant");
   const [phone, setPhone] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const { registerDonor } = useNima();
   const navigate = useNavigate();
 
@@ -22,10 +24,25 @@ export default function DonorOnboarding() {
       toast.error(kind === "BUSINESS" ? "Please enter a business name" : "Please enter your name");
       return;
     }
-    if (kind === "BUSINESS") {
-      registerDonor(name.trim(), type, "BUSINESS");
-    } else {
-      registerDonor(name.trim(), "Individual", "INDIVIDUAL", phone.trim() || undefined);
+    if (!username.trim() || username.trim().length < 3) {
+      toast.error("Pick a username (3+ characters)");
+      return;
+    }
+    if (!password || password.length < 4) {
+      toast.error("Password must be at least 4 characters");
+      return;
+    }
+    const res = registerDonor(
+      name.trim(),
+      kind === "BUSINESS" ? type : "Individual",
+      username,
+      password,
+      kind,
+      phone.trim() || undefined
+    );
+    if (!res.ok) {
+      toast.error(res.message || "Could not create account");
+      return;
     }
     toast.success(`Welcome, ${name.trim()} 👋`);
     navigate("/donor/dashboard");
@@ -35,7 +52,7 @@ export default function DonorOnboarding() {
 
   return (
     <MobileFrame>
-      <TopBar title="Become a donor" subtitle="Two quick details" onBack={() => navigate("/")} />
+      <TopBar title="Create donor account" subtitle="Quick — no paperwork" onBack={() => navigate("/")} />
       <form onSubmit={submit} className="flex-1 flex flex-col px-5 pb-6 overflow-y-auto">
         <div className={`rounded-2xl p-6 mb-6 shadow-elevated text-primary-foreground ${isBiz ? "bg-gradient-primary" : "bg-gradient-trust"}`}>
           {isBiz ? <Store className="w-8 h-8 mb-3" /> : <Heart className="w-8 h-8 mb-3" />}
@@ -43,7 +60,9 @@ export default function DonorOnboarding() {
             {isBiz ? "Turn surplus into impact" : "Share a meal, share kindness"}
           </h2>
           <p className="text-sm opacity-90">
-            {isBiz ? "It takes 30 seconds. No paperwork." : "Even one extra plate can change someone's day."}
+            {isBiz
+              ? "Share login with your team — everyone sees the same donations."
+              : "Even one extra plate can change someone's day."}
           </p>
         </div>
 
@@ -79,10 +98,10 @@ export default function DonorOnboarding() {
           className="bg-card border border-border rounded-xl px-4 py-3.5 mb-5 outline-none focus:ring-2 focus:ring-primary transition"
         />
 
-        {isBiz ? (
+        {isBiz && (
           <>
             <label className="text-sm font-semibold mb-2">Business type</label>
-            <div className="grid grid-cols-3 gap-2 mb-8">
+            <div className="grid grid-cols-3 gap-2 mb-5">
               {TYPES.map((t) => (
                 <button
                   type="button"
@@ -99,7 +118,9 @@ export default function DonorOnboarding() {
               ))}
             </div>
           </>
-        ) : (
+        )}
+
+        {!isBiz && (
           <>
             <label className="text-sm font-semibold mb-2">
               Phone number <span className="text-muted-foreground font-normal">(optional)</span>
@@ -110,21 +131,50 @@ export default function DonorOnboarding() {
               type="tel"
               placeholder="So we can reach you about pickup"
               maxLength={30}
-              className="bg-card border border-border rounded-xl px-4 py-3.5 mb-3 outline-none focus:ring-2 focus:ring-primary transition"
+              className="bg-card border border-border rounded-xl px-4 py-3.5 mb-5 outline-none focus:ring-2 focus:ring-primary transition"
             />
-            <p className="text-xs text-muted-foreground mb-8">
-              Only shared with the person picking up — never publicly shown.
-            </p>
           </>
         )}
 
-        <div className="flex-1" />
+        <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-4 mb-5">
+          <p className="text-xs font-semibold text-secondary mb-3 uppercase tracking-wide">
+            Account login {isBiz && "· share with your team"}
+          </p>
+          <label className="text-sm font-semibold mb-2 block">Username</label>
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
+            placeholder="e.g. alnoor_bakery"
+            maxLength={30}
+            autoCapitalize="none"
+            className="w-full bg-card border border-border rounded-xl px-4 py-3 mb-3 outline-none focus:ring-2 focus:ring-primary transition"
+          />
+          <label className="text-sm font-semibold mb-2 block">Password</label>
+          <input
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            type="password"
+            placeholder="Pick something easy to remember"
+            maxLength={60}
+            className="w-full bg-card border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary transition"
+          />
+          <p className="text-[11px] text-muted-foreground mt-2">
+            Anyone on your team can log in with this — they'll all see and add to the same donations.
+          </p>
+        </div>
+
         <button
           type="submit"
           className="w-full bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-elevated active:scale-[0.99] transition"
         >
-          Continue
+          Create account
         </button>
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Already have an account?{" "}
+          <Link to="/donor/login" className="text-primary font-semibold">
+            Log in
+          </Link>
+        </p>
       </form>
     </MobileFrame>
   );
