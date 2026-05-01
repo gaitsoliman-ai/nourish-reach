@@ -3,11 +3,14 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 export type Role = "DONOR" | "BENEFICIARY";
 export type DonationStatus = "AVAILABLE" | "CLAIMED" | "COLLECTED";
 export type ClaimStatus = "PENDING" | "COLLECTED";
+export type DonorKind = "BUSINESS" | "INDIVIDUAL";
 
 export interface Donor {
   id: string;
-  businessName: string;
-  businessType: string;
+  businessName: string; // For individuals: their display name
+  businessType: string; // For individuals: "Individual"
+  kind: DonorKind;
+  phone?: string;
 }
 
 export interface BeneficiaryProfile {
@@ -24,7 +27,9 @@ export interface Donation {
   businessType: string;
   foodDescription: string;
   quantity: string;
-  distanceKm: number;
+  pickupArea: string;
+  donorKind: DonorKind;
+  donorPhone?: string;
   expiresAt: number;
   createdAt: number;
   status: DonationStatus;
@@ -52,7 +57,7 @@ interface NimaCtx {
   beneficiary: BeneficiaryProfile | null;
   donations: Donation[];
   claims: Claim[];
-  registerDonor: (businessName: string, businessType: string) => void;
+  registerDonor: (businessName: string, businessType: string, kind?: DonorKind, phone?: string) => void;
   generateBeneficiary: () => BeneficiaryProfile;
   logout: () => void;
   createDonation: (d: Omit<Donation, "id" | "donorId" | "businessName" | "businessType" | "createdAt" | "status">) => void;
@@ -77,7 +82,8 @@ const seedDonations = (): Donation[] => {
       businessType: "Bakery",
       foodDescription: "Fresh bread, croissants & pastries from today",
       quantity: "12 portions",
-      distanceKm: 0.4,
+      pickupArea: "Downtown · Main Street",
+      donorKind: "BUSINESS",
       expiresAt: now + 45 * 60 * 1000,
       createdAt: now - 5 * 60 * 1000,
       status: "AVAILABLE",
@@ -89,7 +95,8 @@ const seedDonations = (): Donation[] => {
       businessType: "Hotel",
       foodDescription: "Buffet leftovers — rice, grilled chicken, salads",
       quantity: "20 portions",
-      distanceKm: 1.2,
+      pickupArea: "Marina district",
+      donorKind: "BUSINESS",
       expiresAt: now + 90 * 60 * 1000,
       createdAt: now - 12 * 60 * 1000,
       status: "AVAILABLE",
@@ -97,11 +104,12 @@ const seedDonations = (): Donation[] => {
     {
       id: rid(),
       donorId: "seed-3",
-      businessName: "Café Zeitoun",
-      businessType: "Café",
-      foodDescription: "Sandwiches, wraps and fresh juice",
-      quantity: "6 portions",
-      distanceKm: 0.8,
+      businessName: "Sara",
+      businessType: "Individual",
+      foodDescription: "Home-cooked extra meal — rice with chicken, lovingly made",
+      quantity: "3 portions",
+      pickupArea: "Olive Park neighborhood",
+      donorKind: "INDIVIDUAL",
       expiresAt: now + 30 * 60 * 1000,
       createdAt: now - 2 * 60 * 1000,
       status: "AVAILABLE",
@@ -150,9 +158,9 @@ export function NimaProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(t);
   }, []);
 
-  const registerDonor = (businessName: string, businessType: string) => {
+  const registerDonor = (businessName: string, businessType: string, kind: DonorKind = "BUSINESS", phone?: string) => {
     const id = "donor-" + rid();
-    const d = { id, businessName, businessType };
+    const d: Donor = { id, businessName, businessType, kind, phone };
     setDonor(d);
     setCurrentUser({ id, role: "DONOR" });
   };
@@ -184,6 +192,8 @@ export function NimaProvider({ children }: { children: ReactNode }) {
       donorId: donor.id,
       businessName: donor.businessName,
       businessType: donor.businessType,
+      donorKind: donor.kind,
+      donorPhone: donor.phone,
       createdAt: Date.now(),
       status: "AVAILABLE",
     };
