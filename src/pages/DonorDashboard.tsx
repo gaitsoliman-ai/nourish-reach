@@ -23,7 +23,7 @@ export default function DonorDashboard() {
   }, []);
 
   useEffect(() => {
-    const key = "nima-motivation-day";
+    const key = "barakah-motivation-day";
     const today = new Date().toDateString();
     const last = sessionStorage.getItem(key);
     if (last !== today && Math.random() < 0.35) {

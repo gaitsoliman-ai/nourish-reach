@@ -3,10 +3,10 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-lea
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-/** Mint active pickup pin (Sharity primary) */
+/** Mint active pickup pin (Barakah primary) */
 const mintPinHtml = `<div style="width:28px;height:28px;border-radius:50%;background:#02db96;border:3px solid #fff;box-shadow:0 4px 14px rgba(2,219,150,0.45),0 2px 6px rgba(0,0,0,0.12);"></div>`;
 const mintMarkerIcon = L.divIcon({
-  className: "nima-mint-marker",
+  className: "barakah-mint-marker",
   html: mintPinHtml,
   iconSize: [28, 28],
   iconAnchor: [14, 14],

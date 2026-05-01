@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Sharity palette: mint #02db96, warm yellow #ffc02a, AI purple #892aff */
+    /* Barakah palette: mint #02db96, warm yellow #ffc02a, AI purple #892aff */
     --background: 210 35% 98%;
     --foreground: 222 47% 11%;
 
@@ -146,7 +146,7 @@
 }
 
 /* Leaflet custom mint marker */
-.leaflet-div-icon.nima-mint-marker {
+.leaflet-div-icon.barakah-mint-marker {
   background: transparent !important;
   border: none !important;
 }

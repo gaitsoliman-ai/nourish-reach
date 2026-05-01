@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { MobileFrame } from "@/components/MobileFrame";
 import { TopBar } from "@/components/TopBar";
-import { useNima } from "@/context/NimaContext";
+import { beneficiaryPickupQrValue, useNima } from "@/context/NimaContext";
 import { QrMock } from "@/components/QrMock";
 import { Clock, MapPin, Store, Navigation } from "lucide-react";
 import { timeLeft } from "@/lib/time";
@@ -52,7 +52,7 @@ export default function BeneficiaryQR() {
           </div>
 
           <div className="flex justify-center mb-4">
-            <QrMock value={`NIMA-${beneficiary!.id}-${claim.pinCode}`} size={220} />
+            <QrMock value={beneficiaryPickupQrValue(beneficiary!.id, claim.pinCode)} size={220} />
           </div>
 
           <div className="text-center mb-4">

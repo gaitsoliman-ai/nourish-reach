@@ -52,7 +52,7 @@ const donors = {
 
 const beneficiary = {
   id: "ben-main",
-  qrCode: "NIMA-ben-main-5821",
+  qrCode: "BARAKAH-ben-main-5821",
   pinCode: "5821",
   createdAt: now - 10 * 60 * 1000,
 };

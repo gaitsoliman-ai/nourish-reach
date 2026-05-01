@@ -1,6 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { FoodCategory, Packaging } from "@/lib/foodTaxonomy";
 
+/** Prefix encoded in pickup QR payloads (verification accepts legacy NIMA-* too). */
+export const QR_PREFIX = "BARAKAH";
+const LEGACY_QR_PREFIX = "NIMA";
+
+export function beneficiaryPickupQrValue(beneficiaryId: string, claimPinCode: string): string {
+  return `${QR_PREFIX}-${beneficiaryId}-${claimPinCode}`;
+}
+
 export type Role = "DONOR" | "BENEFICIARY";
 export type DonationStatus = "AVAILABLE" | "CLAIMED" | "COLLECTED" | "EXPIRED";
 export type ClaimStatus = "PENDING" | "COLLECTED";
@@ -303,7 +311,7 @@ export function NimaProvider({ children }: { children: ReactNode }) {
     const id = "ben-" + rid();
     const profile: BeneficiaryProfile = {
       id,
-      qrCode: `NIMA-${id}-${rpin()}`,
+      qrCode: `${QR_PREFIX}-${id}-${rpin()}`,
       pinCode: rpin(),
       createdAt: Date.now(),
     };
@@ -373,11 +381,12 @@ export function NimaProvider({ children }: { children: ReactNode }) {
   const verifyPickup: NimaCtx["verifyPickup"] = (pin) => {
     const cleaned = pin.trim().toUpperCase();
     // Match by PIN or QR
-    const claim = claims.find(
-      (c) =>
-        c.status === "PENDING" &&
-        (c.pinCode === cleaned || `NIMA-${c.beneficiaryId}-${c.pinCode}` === cleaned)
-    );
+    const claim = claims.find((c) => {
+      if (c.status !== "PENDING") return false;
+      const byPin = c.pinCode === cleaned;
+      const byQr = (p: string) => `${p}-${c.beneficiaryId}-${c.pinCode}` === cleaned;
+      return byPin || byQr(QR_PREFIX) || byQr(LEGACY_QR_PREFIX);
+    });
     if (!claim) return { ok: false, message: "Invalid or already used code" };
     const donation = donations.find((d) => d.id === claim.donationId);
     if (!donation) return { ok: false, message: "Donation not found" };

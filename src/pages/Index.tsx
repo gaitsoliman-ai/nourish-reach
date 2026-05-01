@@ -42,8 +42,8 @@ const Index = () => {
             <Sparkles className="w-5 h-5" />
             <span className="text-sm font-medium tracking-wide opacity-90">Anonymous · Dignified · Fast</span>
           </div>
-          <h1 className="text-6xl font-black tracking-tight mb-1 animate-slide-up">Ni'ma</h1>
-          <p className="text-xl font-light opacity-90 mb-1 animate-slide-up">نِعمة</p>
+          <h1 className="text-6xl font-black tracking-tight mb-1 animate-slide-up">Barakah</h1>
+          <p className="text-xl font-light opacity-90 mb-1 animate-slide-up">بركة</p>
           <p className="text-base opacity-95 max-w-xs leading-relaxed mt-3 animate-slide-up">
             A blessing shared. Rescue surplus food, preserve dignity, fight waste — together.
           </p>

@@ -67,7 +67,7 @@ export function DonorAiBot() {
         className="w-full flex items-center gap-2 px-4 py-3 bg-ai text-ai-foreground text-left"
       >
         <Bot className="w-5 h-5 shrink-0" />
-        <span className="font-bold text-sm">Ni'ma assistant</span>
+        <span className="font-bold text-sm">Barakah assistant</span>
         <span className="ml-auto text-xs opacity-90">{open ? "Hide" : "Show"}</span>
       </button>
       {open && (

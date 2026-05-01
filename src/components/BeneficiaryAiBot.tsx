@@ -74,10 +74,10 @@ export function BeneficiaryAiBot() {
         type="button"
         onClick={() => setFabOpen(true)}
         className="fixed bottom-6 right-6 z-40 md:right-[max(1.5rem,calc(50%-11rem+1.5rem))] flex items-center gap-2 rounded-full bg-ai text-ai-foreground px-5 py-3.5 font-bold text-sm shadow-elevated ring-2 ring-white/80 hover:opacity-95 transition"
-        aria-label="Ask Ni'ma AI"
+        aria-label="Ask Barakah AI"
       >
         <MessageCircle className="w-5 h-5" />
-        Ask Ni'ma AI
+        Ask Barakah AI
       </button>
 
       {fabOpen && (
@@ -91,7 +91,7 @@ export function BeneficiaryAiBot() {
           <div className="pointer-events-auto relative w-full max-w-md max-h-[85vh] md:rounded-3xl rounded-t-3xl bg-card shadow-elevated flex flex-col overflow-hidden ring-1 ring-ai/20 mb-0 md:mb-0">
             <div className="flex items-center gap-2 px-4 py-3 bg-ai text-ai-foreground">
               <Bot className="w-5 h-5" />
-              <span className="font-bold text-sm">Ask Ni'ma AI</span>
+              <span className="font-bold text-sm">Ask Barakah AI</span>
               <button
                 type="button"
                 onClick={() => setFabOpen(false)}
