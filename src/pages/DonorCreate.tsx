@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import type { DonorCreatePrefillState } from "@/components/DonorAiBot";
 import { MobileFrame } from "@/components/MobileFrame";
 import { TopBar } from "@/components/TopBar";
 import { useNima } from "@/context/NimaContext";
@@ -12,7 +13,10 @@ import {
   Packaging,
   COMMON_ALLERGENS,
   photoForCategory,
+  categoryPublicCardSrc,
+  categoryCardFallbackSrc,
 } from "@/lib/foodTaxonomy";
+import { FoodCategoryCard } from "@/components/FoodCategoryCard";
 import { MapPicker, LatLng } from "@/components/MapPicker";
 
 const PRESETS = [
@@ -26,7 +30,9 @@ const STEPS = ["Food", "Safety", "Pickup", "Review"] as const;
 
 export default function DonorCreate() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { donor, createDonation } = useNima();
+  const prefillApplied = useRef(false);
 
   const [step, setStep] = useState(0);
 
@@ -50,10 +56,16 @@ export default function DonorCreate() {
   const [locNotes, setLocNotes] = useState("");
   const [pin, setPin] = useState<LatLng | null>(null);
 
-  if (!donor) {
-    navigate("/donor/onboarding");
-    return null;
-  }
+  useEffect(() => {
+    const prefill = (location.state as { aiPrefill?: DonorCreatePrefillState } | null)?.aiPrefill;
+    if (!prefill || prefillApplied.current) return;
+    prefillApplied.current = true;
+    setCategory(prefill.category);
+    setDesc(prefill.desc);
+    setQty(prefill.qty);
+    if (prefill.pickupArea) setPickupArea(prefill.pickupArea);
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state, location.pathname, navigate]);
 
   const computeMinutes = () => {
     const h = parseInt(customH || "0", 10) || 0;
@@ -257,20 +269,14 @@ function FoodStep(p: any) {
       <label className="text-sm font-semibold mb-2 block">Food type</label>
       <div className="grid grid-cols-2 gap-2 mb-5">
         {FOOD_CATEGORIES.map((c) => (
-          <button
-            type="button"
+          <FoodCategoryCard
             key={c.value}
-            onClick={() => p.setCategory(c.value)}
-            className={`text-left p-3 rounded-xl border transition ${
-              p.category === c.value
-                ? "border-primary bg-primary/5 shadow-soft"
-                : "border-border bg-card hover:border-primary/40"
-            }`}
-          >
-            <div className="text-xl mb-1">{c.emoji}</div>
-            <div className="text-sm font-semibold leading-tight">{c.label}</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">{c.hint}</div>
-          </button>
+            value={c.value}
+            label={c.label}
+            hint={c.hint}
+            selected={p.category === c.value}
+            onSelect={() => p.setCategory(c.value)}
+          />
         ))}
       </div>
 
@@ -497,7 +503,17 @@ function ReviewStep(p: any) {
       <div className="space-y-3">
         <Row label="Food">
           <div className="flex items-center gap-2">
-            <span className="text-xl">{cat?.emoji}</span>
+            {cat && (
+              <img
+                src={categoryPublicCardSrc(cat.value)}
+                alt={cat.label}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = categoryCardFallbackSrc(cat.value);
+                }}
+                className="w-8 h-8 rounded-full object-cover shrink-0"
+              />
+            )}
             <span className="font-semibold">{cat?.label}</span>
           </div>
         </Row>

@@ -2,18 +2,20 @@ import { useState } from "react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { TopBar } from "@/components/TopBar";
 import { useNima } from "@/context/NimaContext";
+import { useLocale } from "@/context/LocaleContext";
+import { i18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { CheckCircle2, ScanLine, Camera } from "lucide-react";
 import { QrScanner } from "@/components/QrScanner";
 
 export default function DonorVerify() {
   const { verifyPickup, donor, donations } = useNima();
+  const { t } = useLocale();
   const [pin, setPin] = useState("");
   const [last, setLast] = useState<{ ok: boolean; message: string } | null>(null);
   const [scanning, setScanning] = useState(false);
 
-  if (!donor) return null;
-  const pendingForMe = donations.filter((d) => d.donorId === donor.id && d.status === "CLAIMED");
+  const pendingForMe = donations.filter((d) => d.donorId === donor!.id && d.status === "CLAIMED");
 
   const runVerify = (code: string) => {
     const res = verifyPickup(code);
@@ -36,13 +38,15 @@ export default function DonorVerify() {
     <MobileFrame>
       <TopBar title="Verify pickup" subtitle="Enter PIN or scan QR" />
       <div className="flex-1 flex flex-col px-5 pb-6 overflow-y-auto">
-        <div className="bg-gradient-trust text-accent-foreground rounded-2xl p-6 mb-5 shadow-elevated">
+        <div className="bg-gradient-trust text-white rounded-2xl p-6 mb-5 shadow-elevated">
           <ScanLine className="w-8 h-8 mb-2" />
           <h2 className="font-bold text-lg">Confirm the handover</h2>
-          <p className="text-sm opacity-90">
+          <p className="text-sm text-white/90">
             Ask the beneficiary to show their 4-digit PIN or scan their QR with your camera.
           </p>
         </div>
+
+        <p className="text-xs text-center text-muted-foreground mb-2">{t(i18n.fallback.camera)}</p>
 
         <button
           type="button"

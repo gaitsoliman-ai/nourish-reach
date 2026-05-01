@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import type { FoodCategory, Packaging } from "@/lib/foodTaxonomy";
 
 export type Role = "DONOR" | "BENEFICIARY";
-export type DonationStatus = "AVAILABLE" | "CLAIMED" | "COLLECTED";
+export type DonationStatus = "AVAILABLE" | "CLAIMED" | "COLLECTED" | "EXPIRED";
 export type ClaimStatus = "PENDING" | "COLLECTED";
 export type DonorKind = "BUSINESS" | "INDIVIDUAL";
 
@@ -76,6 +76,8 @@ interface NimaCtx {
   donations: Donation[];
   claims: Claim[];
   donorAccounts: Donor[];
+  /** false until localStorage hydration finishes — use to avoid route-guard flicker */
+  isHydrated: boolean;
   registerDonor: (
     businessName: string,
     businessType: string,
@@ -202,7 +204,19 @@ const seedDonations = (): Donation[] => {
 
 const STORAGE_KEY = "nima-state-v1";
 
+function migrateDonationStatuses(list: Donation[]): Donation[] {
+  const now = Date.now();
+  return list.map((d) => {
+    if (d.status === "COLLECTED") return d;
+    if (d.status === "AVAILABLE" && d.expiresAt <= now) {
+      return { ...d, status: "EXPIRED" as const };
+    }
+    return d;
+  });
+}
+
 export function NimaProvider({ children }: { children: ReactNode }) {
+  const [isHydrated, setIsHydrated] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [donor, setDonor] = useState<Donor | null>(null);
   const [beneficiary, setBeneficiary] = useState<BeneficiaryProfile | null>(null);
@@ -210,7 +224,7 @@ export function NimaProvider({ children }: { children: ReactNode }) {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [donorAccounts, setDonorAccounts] = useState<Donor[]>([]);
 
-  // hydrate
+  // hydrate from localStorage — then mark hydrated so route guards and persist can run safely
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -219,27 +233,38 @@ export function NimaProvider({ children }: { children: ReactNode }) {
         if (s.currentUser) setCurrentUser(s.currentUser);
         if (s.donor) setDonor(s.donor);
         if (s.beneficiary) setBeneficiary(s.beneficiary);
-        if (Array.isArray(s.donations) && s.donations.length) setDonations(s.donations);
+        if (Array.isArray(s.donations) && s.donations.length) {
+          setDonations(migrateDonationStatuses(s.donations as Donation[]));
+        }
         if (Array.isArray(s.claims)) setClaims(s.claims);
         if (Array.isArray(s.donorAccounts)) setDonorAccounts(s.donorAccounts);
       }
-    } catch {}
+    } catch {
+      /* ignore corrupt storage */
+    }
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!isHydrated) return;
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ currentUser, donor, beneficiary, donations, claims, donorAccounts })
     );
-  }, [currentUser, donor, beneficiary, donations, claims, donorAccounts]);
+  }, [isHydrated, currentUser, donor, beneficiary, donations, claims, donorAccounts]);
 
-  // Auto-expire donations every 30s
+  // Mark AVAILABLE donations as EXPIRED when past expiresAt (keep rows for history)
   useEffect(() => {
-    const t = setInterval(() => {
+    const tick = () => {
+      const now = Date.now();
       setDonations((prev) =>
-        prev.filter((d) => d.status === "COLLECTED" || d.expiresAt > Date.now())
+        prev.map((d) =>
+          d.status === "AVAILABLE" && d.expiresAt <= now ? { ...d, status: "EXPIRED" as const } : d
+        )
       );
-    }, 30000);
+    };
+    tick();
+    const t = setInterval(tick, 30000);
     return () => clearInterval(t);
   }, []);
 
@@ -318,7 +343,12 @@ export function NimaProvider({ children }: { children: ReactNode }) {
     if (active) return null;
 
     const target = donations.find((d) => d.id === donationId);
-    if (!target || target.status !== "AVAILABLE") return null;
+    if (
+      !target ||
+      target.status !== "AVAILABLE" ||
+      target.expiresAt <= Date.now()
+    )
+      return null;
 
     const pin = rpin();
     const claim: Claim = {
@@ -385,6 +415,7 @@ export function NimaProvider({ children }: { children: ReactNode }) {
         donations,
         claims,
         donorAccounts,
+        isHydrated,
         registerDonor,
         loginDonor,
         generateBeneficiary,

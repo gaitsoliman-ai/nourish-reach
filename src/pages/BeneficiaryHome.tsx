@@ -2,35 +2,35 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useNima } from "@/context/NimaContext";
+import { useLocale } from "@/context/LocaleContext";
+import { i18n } from "@/lib/i18n";
 import { DonationCard } from "@/components/DonationCard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { BeneficiaryAiBot } from "@/components/BeneficiaryAiBot";
 import { toast } from "sonner";
 import { LogOut, QrCode, ShieldCheck, Utensils } from "lucide-react";
 
 export default function BeneficiaryHome() {
   const navigate = useNavigate();
-  const { beneficiary, donations, claimDonation, logout, myClaim, myActiveDonation } = useNima();
+  const { donations, claimDonation, logout, myClaim, myActiveDonation } = useNima();
+  const { t } = useLocale();
   const [, force] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
-
-  useEffect(() => {
-    if (!beneficiary) navigate("/");
-  }, [beneficiary, navigate]);
 
   useEffect(() => {
     const t = setInterval(() => force((n) => n + 1), 30000);
     return () => clearInterval(t);
   }, []);
 
-  if (!beneficiary) return null;
-
   const active = myClaim();
   const activeDonation = myActiveDonation();
-  const available = donations.filter((d) => d.status === "AVAILABLE");
+  const available = donations.filter(
+    (d) => d.status === "AVAILABLE" && d.expiresAt > Date.now()
+  );
 
   const handleClaim = (id: string) => {
     if (active) {
-      toast.error("You already have an active claim. Pick it up first.");
+      toast.error(t(i18n.error.activeClaim));
       return;
     }
     const c = claimDonation(id);
@@ -44,7 +44,7 @@ export default function BeneficiaryHome() {
 
   return (
     <MobileFrame>
-      <div className="bg-gradient-trust text-accent-foreground px-5 pt-7 pb-7 rounded-b-3xl">
+      <div className="bg-gradient-trust text-white px-5 pt-7 pb-7 rounded-b-3xl">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5" />
@@ -58,8 +58,8 @@ export default function BeneficiaryHome() {
             <LogOut className="w-4 h-4" />
           </button>
         </div>
-        <h1 className="text-2xl font-bold">Meals shared near you</h1>
-        <p className="text-sm opacity-90">A blessing offered with kindness — yours to enjoy.</p>
+        <h1 className="text-2xl font-bold text-white">Meals shared near you</h1>
+        <p className="text-sm text-white/90">A blessing offered with kindness — yours to enjoy.</p>
       </div>
 
       {active && activeDonation && (
@@ -87,12 +87,10 @@ export default function BeneficiaryHome() {
         </div>
 
         {available.length === 0 ? (
-          <div className="bg-card border border-dashed border-border rounded-2xl p-8 text-center mt-4">
+          <div className="bg-card rounded-2xl p-8 text-center mt-4 shadow-soft border border-dashed border-border/70">
             <Utensils className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="font-semibold mb-1">Nothing available right now</p>
-            <p className="text-sm text-muted-foreground">
-              Check back soon — businesses post throughout the day.
-            </p>
+            <p className="font-semibold mb-1 text-foreground">Nothing available right now</p>
+            <p className="text-sm text-muted-foreground">{t(i18n.empty.beneficiary)}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -124,6 +122,7 @@ export default function BeneficiaryHome() {
           navigate("/");
         }}
       />
+      <BeneficiaryAiBot />
     </MobileFrame>
   );
 }

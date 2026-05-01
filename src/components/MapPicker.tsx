@@ -3,15 +3,13 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-lea
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix default marker icons (Leaflet + bundlers)
-const icon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
+/** Mint active pickup pin (Sharity primary) */
+const mintPinHtml = `<div style="width:28px;height:28px;border-radius:50%;background:#02db96;border:3px solid #fff;box-shadow:0 4px 14px rgba(2,219,150,0.45),0 2px 6px rgba(0,0,0,0.12);"></div>`;
+const mintMarkerIcon = L.divIcon({
+  className: "nima-mint-marker",
+  html: mintPinHtml,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
 });
 
 export interface LatLng {
@@ -78,7 +76,7 @@ export function MapPicker({ value, onChange, height = 240, interactive = true }:
 
   return (
     <div
-      className="rounded-2xl overflow-hidden border border-border shadow-soft relative"
+      className="rounded-2xl overflow-hidden shadow-soft ring-1 ring-black/[0.06] relative"
       style={{ height }}
     >
       <MapContainer
@@ -95,7 +93,7 @@ export function MapPicker({ value, onChange, height = 240, interactive = true }:
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {interactive && <ClickHandler onPick={onChange} />}
-        {value && <Marker position={[value.lat, value.lng]} icon={icon} />}
+        {value && <Marker position={[value.lat, value.lng]} icon={mintMarkerIcon} />}
         {value && <Recenter center={value} />}
         <InvalidateOnMount />
       </MapContainer>

@@ -1,11 +1,13 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Heart, Store, Sparkles, ShieldCheck } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useNima } from "@/context/NimaContext";
+import { useLocale } from "@/context/LocaleContext";
 
 const Index = () => {
   const navigate = useNavigate();
   const { generateBeneficiary, donor, beneficiary } = useNima();
+  const { locale, setLocale } = useLocale();
 
   const onNeedFood = () => {
     if (!beneficiary) generateBeneficiary();
@@ -108,6 +110,24 @@ const Index = () => {
           <div className="flex items-center justify-center gap-2 mt-6 text-xs opacity-90">
             <ShieldCheck className="w-4 h-4" />
             <span>No signup required for beneficiaries</span>
+          </div>
+
+          <div className="flex justify-center gap-3 mt-4 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setLocale("en")}
+              className={locale === "en" ? "text-white underline" : "text-white/70"}
+            >
+              English
+            </button>
+            <span className="text-white/40">|</span>
+            <button
+              type="button"
+              onClick={() => setLocale("ar")}
+              className={locale === "ar" ? "text-white underline" : "text-white/70"}
+            >
+              العربية
+            </button>
           </div>
         </div>
       </div>

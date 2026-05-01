@@ -4,19 +4,22 @@ import { LogIn } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { TopBar } from "@/components/TopBar";
 import { useNima } from "@/context/NimaContext";
+import { useLocale } from "@/context/LocaleContext";
+import { i18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export default function DonorLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { loginDonor } = useNima();
+  const { t } = useLocale();
   const navigate = useNavigate();
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const res = loginDonor(username, password);
     if (!res.ok) {
-      toast.error(res.message || "Login failed");
+      toast.error(res.message || t(i18n.errors.login));
       return;
     }
     toast.success("Welcome back 👋");

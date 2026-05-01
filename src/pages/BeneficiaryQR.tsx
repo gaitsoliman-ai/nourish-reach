@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileFrame } from "@/components/MobileFrame";
 import { TopBar } from "@/components/TopBar";
@@ -13,19 +12,6 @@ export default function BeneficiaryQR() {
   const { beneficiary, myClaim, myActiveDonation } = useNima();
   const claim = myClaim();
   const donation = myActiveDonation();
-
-  useEffect(() => {
-    if (!beneficiary) navigate("/");
-  }, [beneficiary, navigate]);
-
-  // Auto-redirect if claim collected
-  useEffect(() => {
-    if (beneficiary && !claim) {
-      // could be just-collected or never claimed
-    }
-  }, [beneficiary, claim]);
-
-  if (!beneficiary) return null;
 
   if (!claim || !donation) {
     return (
@@ -66,7 +52,7 @@ export default function BeneficiaryQR() {
           </div>
 
           <div className="flex justify-center mb-4">
-            <QrMock value={`NIMA-${beneficiary.id}-${claim.pinCode}`} size={220} />
+            <QrMock value={`NIMA-${beneficiary!.id}-${claim.pinCode}`} size={220} />
           </div>
 
           <div className="text-center mb-4">
@@ -108,7 +94,7 @@ export default function BeneficiaryQR() {
                 href={googleDirectionsLink(donation.location)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 text-center text-sm font-semibold py-3 rounded-xl bg-gradient-trust text-accent-foreground inline-flex items-center justify-center gap-1"
+                className="flex-1 text-center text-sm font-semibold py-3 rounded-xl bg-gradient-trust text-white inline-flex items-center justify-center gap-1"
               >
                 <Navigation className="w-4 h-4" /> Directions
               </a>

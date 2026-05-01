@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Clock, MapPin, Package, Store, Heart, ChevronDown, ShieldCheck, AlertTriangle, Calendar, Navigation, CheckCircle2 } from "lucide-react";
 import { Donation } from "@/context/NimaContext";
 import { timeAgo, timeLeft } from "@/lib/time";
-import { emojiForCategory, labelForCategory, labelForPackaging } from "@/lib/foodTaxonomy";
+import {
+  categoryCardFallbackSrc,
+  categoryPublicCardSrc,
+  labelForCategory,
+  labelForPackaging,
+} from "@/lib/foodTaxonomy";
 import { GoogleMapView, googleDirectionsLink, googleMapsLink } from "@/components/MapPicker";
 
 const FALLBACK_PHOTO = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=70&auto=format&fit=crop";
@@ -26,7 +31,7 @@ export function DonationCard({
   const photo = donation.photo || FALLBACK_PHOTO;
 
   return (
-    <div className="bg-card rounded-2xl shadow-soft border border-border/60 animate-slide-up overflow-hidden">
+    <div className="bg-card rounded-2xl shadow-soft shadow-[0_8px_30px_-8px_rgba(2,219,150,0.12)] ring-1 ring-black/[0.04] animate-slide-up overflow-hidden">
       {/* Hero photo */}
       <div className="relative h-32 w-full overflow-hidden bg-muted">
         <img src={photo} alt={donation.foodDescription} className="w-full h-full object-cover" loading="lazy" />
@@ -40,8 +45,16 @@ export function DonationCard({
           {t.label}
         </span>
         {donation.foodCategory && (
-          <span className="absolute top-2 left-2 text-[11px] bg-white/95 text-foreground font-semibold px-2 py-1 rounded-full inline-flex items-center gap-1">
-            <span>{emojiForCategory(donation.foodCategory)}</span>
+          <span className="absolute top-2 left-2 text-[11px] bg-white/95 text-foreground font-semibold px-2 py-1 rounded-full inline-flex items-center gap-1.5">
+            <img
+              src={categoryPublicCardSrc(donation.foodCategory)}
+              alt=""
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = categoryCardFallbackSrc(donation.foodCategory);
+              }}
+              className="w-5 h-5 rounded-full object-cover"
+            />
             {labelForCategory(donation.foodCategory)}
           </span>
         )}
@@ -58,7 +71,18 @@ export function DonationCard({
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-5">
+        {(donation.status === "COLLECTED" || donation.status === "EXPIRED") && (
+          <span
+            className={`inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-2 ${
+              donation.status === "COLLECTED"
+                ? "bg-primary/15 text-primary"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {donation.status === "COLLECTED" ? "Rescued" : "Expired"}
+          </span>
+        )}
         <p className="text-sm text-foreground/90 mb-3 line-clamp-2">{donation.foodDescription}</p>
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3 flex-wrap">
@@ -112,7 +136,7 @@ export function DonationCard({
               <DetailRow icon={MapPin} label="Pickup notes" value={donation.location.notes} />
             )}
             {donation.location && (
-              <div className="rounded-xl overflow-hidden border border-border">
+              <div className="rounded-xl overflow-hidden shadow-inner ring-1 ring-black/[0.06]">
                 <GoogleMapView point={donation.location} height={170} />
                 <div className="flex gap-2 p-2 bg-card">
                   <a

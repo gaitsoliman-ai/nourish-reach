@@ -4,7 +4,8 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    /* Sharity palette: mint #02db96, warm yellow #ffc02a, AI purple #892aff */
+    --background: 210 35% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -13,48 +14,55 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 16 100% 60%;
+    /* Primary / CTAs / success — mint */
+    --primary: 164 98% 43%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 16 100% 70%;
+    --primary-glow: 164 90% 52%;
 
-    --secondary: 224 76% 48%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary / motivation / warnings — warm yellow */
+    --secondary: 43 100% 58%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 215 20% 92%;
-    --muted-foreground: 215 19% 35%;
+    --muted: 210 25% 94%;
+    --muted-foreground: 215 19% 38%;
 
-    --accent: 160 84% 39%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent — soft teal companion for trust surfaces */
+    --accent: 164 45% 92%;
+    --accent-foreground: 164 70% 22%;
 
-    --tertiary: 160 84% 39%;
+    --tertiary: 164 98% 38%;
     --tertiary-foreground: 0 0% 100%;
 
     --neutral: 215 19% 35%;
     --neutral-foreground: 0 0% 100%;
 
-    --success: 160 84% 39%;
+    --success: 164 98% 43%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 43 100% 58%;
+    --warning-foreground: 222 47% 11%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 20% 88%;
-    --input: 215 20% 88%;
-    --ring: 16 100% 60%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 164 98% 43%;
+
+    /* AI / special — purple #892aff */
+    --ai: 263 100% 58%;
+    --ai-foreground: 0 0% 100%;
 
     --radius: 1rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(16 100% 60%), hsl(16 100% 70%));
-    --gradient-trust: linear-gradient(135deg, hsl(224 76% 48%), hsl(224 76% 60%));
-    --gradient-hero: linear-gradient(160deg, hsl(16 100% 60%) 0%, hsl(224 76% 48%) 60%, hsl(160 84% 39%) 100%);
-    --gradient-soft: linear-gradient(180deg, hsl(16 100% 97%), hsl(210 40% 98%));
+    --gradient-primary: linear-gradient(135deg, hsl(164 98% 43%), hsl(164 85% 50%));
+    --gradient-trust: linear-gradient(135deg, hsl(263 85% 55%), hsl(263 100% 62%));
+    --gradient-hero: linear-gradient(160deg, hsl(164 98% 43%) 0%, hsl(263 90% 55%) 55%, hsl(43 100% 58%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(164 40% 97%), hsl(210 35% 98%));
 
-    --shadow-soft: 0 2px 12px -2px hsl(215 19% 35% / 0.1);
-    --shadow-elevated: 0 12px 40px -8px hsl(16 100% 60% / 0.3);
-    --shadow-glow: 0 0 40px hsl(16 100% 70% / 0.45);
+    --shadow-soft: 0 4px 24px -4px hsl(222 47% 11% / 0.08), 0 2px 8px -2px hsl(222 47% 11% / 0.04);
+    --shadow-elevated: 0 20px 50px -12px hsl(164 98% 43% / 0.18), 0 8px 20px -8px hsl(222 47% 11% / 0.08);
+    --shadow-glow: 0 0 48px hsl(164 98% 43% / 0.35);
 
     --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -65,7 +73,7 @@
     --sidebar-accent: 240 5% 96%;
     --sidebar-accent-foreground: 240 6% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-ring: 164 98% 43%;
   }
 
   .dark {
@@ -75,19 +83,21 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 22 95% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --primary: 164 90% 48%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 43 95% 52%;
+    --secondary-foreground: 222 47% 6%;
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 211 100% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 263 40% 22%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 22 95% 53%;
+    --ring: 164 90% 48%;
+    --ai: 263 100% 65%;
+    --ai-foreground: 0 0% 100%;
   }
 }
 
@@ -131,6 +141,12 @@
   to { opacity: 1; transform: scale(1); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px hsl(22 95% 53% / 0.3); }
-  50% { box-shadow: 0 0 40px hsl(22 95% 53% / 0.6); }
+  0%, 100% { box-shadow: 0 0 20px hsl(164 98% 43% / 0.25); }
+  50% { box-shadow: 0 0 40px hsl(164 98% 43% / 0.45); }
+}
+
+/* Leaflet custom mint marker */
+.leaflet-div-icon.nima-mint-marker {
+  background: transparent !important;
+  border: none !important;
 }
