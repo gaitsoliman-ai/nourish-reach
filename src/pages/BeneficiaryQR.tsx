@@ -4,8 +4,9 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { TopBar } from "@/components/TopBar";
 import { useNima } from "@/context/NimaContext";
 import { QrMock } from "@/components/QrMock";
-import { Clock, MapPin, Store } from "lucide-react";
+import { Clock, MapPin, Store, Navigation } from "lucide-react";
 import { timeLeft } from "@/lib/time";
+import { MapPicker, googleDirectionsLink, googleMapsLink } from "@/components/MapPicker";
 
 export default function BeneficiaryQR() {
   const navigate = useNavigate();
@@ -81,12 +82,39 @@ export default function BeneficiaryQR() {
               <span className="flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5" /> {donation.pickupArea}
               </span>
-              <span className={`flex items-center gap-1 font-semibold ${t.urgent ? "text-destructive" : "text-success"}`}>
+              <span className={`flex items-center gap-1 font-semibold ${t.urgent ? "text-destructive" : "text-tertiary"}`}>
                 <Clock className="w-3.5 h-3.5" /> {t.label}
               </span>
             </div>
+            {donation.location?.notes && (
+              <p className="text-xs text-muted-foreground">📌 {donation.location.notes}</p>
+            )}
           </div>
         </div>
+
+        {donation.location && (
+          <div className="bg-white text-foreground rounded-3xl p-3 shadow-2xl mt-4 animate-scale-in">
+            <MapPicker value={donation.location} onChange={() => {}} interactive={false} height={180} />
+            <div className="flex gap-2 mt-3">
+              <a
+                href={googleMapsLink(donation.location)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 text-center text-sm font-semibold py-3 rounded-xl bg-secondary/10 text-secondary"
+              >
+                Open in Maps
+              </a>
+              <a
+                href={googleDirectionsLink(donation.location)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 text-center text-sm font-semibold py-3 rounded-xl bg-gradient-trust text-accent-foreground inline-flex items-center justify-center gap-1"
+              >
+                <Navigation className="w-4 h-4" /> Directions
+              </a>
+            </div>
+          </div>
+        )}
 
         <p className="text-center text-xs opacity-90 mt-5">
           Your identity stays private. Only your code is shared.
