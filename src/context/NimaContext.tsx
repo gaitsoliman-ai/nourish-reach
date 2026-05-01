@@ -11,6 +11,8 @@ export interface Donor {
   businessType: string; // For individuals: "Individual"
   kind: DonorKind;
   phone?: string;
+  username: string;
+  password: string;
 }
 
 export interface BeneficiaryProfile {
@@ -57,7 +59,16 @@ interface NimaCtx {
   beneficiary: BeneficiaryProfile | null;
   donations: Donation[];
   claims: Claim[];
-  registerDonor: (businessName: string, businessType: string, kind?: DonorKind, phone?: string) => void;
+  donorAccounts: Donor[];
+  registerDonor: (
+    businessName: string,
+    businessType: string,
+    username: string,
+    password: string,
+    kind?: DonorKind,
+    phone?: string
+  ) => { ok: boolean; message?: string };
+  loginDonor: (username: string, password: string) => { ok: boolean; message?: string };
   generateBeneficiary: () => BeneficiaryProfile;
   logout: () => void;
   createDonation: (d: Omit<Donation, "id" | "donorId" | "businessName" | "businessType" | "createdAt" | "status" | "donorKind" | "donorPhone">) => void;
@@ -125,6 +136,7 @@ export function NimaProvider({ children }: { children: ReactNode }) {
   const [beneficiary, setBeneficiary] = useState<BeneficiaryProfile | null>(null);
   const [donations, setDonations] = useState<Donation[]>(seedDonations);
   const [claims, setClaims] = useState<Claim[]>([]);
+  const [donorAccounts, setDonorAccounts] = useState<Donor[]>([]);
 
   // hydrate
   useEffect(() => {
@@ -137,6 +149,7 @@ export function NimaProvider({ children }: { children: ReactNode }) {
         if (s.beneficiary) setBeneficiary(s.beneficiary);
         if (Array.isArray(s.donations) && s.donations.length) setDonations(s.donations);
         if (Array.isArray(s.claims)) setClaims(s.claims);
+        if (Array.isArray(s.donorAccounts)) setDonorAccounts(s.donorAccounts);
       }
     } catch {}
   }, []);
@@ -144,9 +157,9 @@ export function NimaProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ currentUser, donor, beneficiary, donations, claims })
+      JSON.stringify({ currentUser, donor, beneficiary, donations, claims, donorAccounts })
     );
-  }, [currentUser, donor, beneficiary, donations, claims]);
+  }, [currentUser, donor, beneficiary, donations, claims, donorAccounts]);
 
   // Auto-expire donations every 30s
   useEffect(() => {
@@ -158,11 +171,35 @@ export function NimaProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(t);
   }, []);
 
-  const registerDonor = (businessName: string, businessType: string, kind: DonorKind = "BUSINESS", phone?: string) => {
+  const registerDonor: NimaCtx["registerDonor"] = (
+    businessName,
+    businessType,
+    username,
+    password,
+    kind = "BUSINESS",
+    phone
+  ) => {
+    const uname = username.trim().toLowerCase();
+    if (!uname || !password) return { ok: false, message: "Username and password required" };
+    if (donorAccounts.some((a) => a.username === uname)) {
+      return { ok: false, message: "That username is taken — try another" };
+    }
     const id = "donor-" + rid();
-    const d: Donor = { id, businessName, businessType, kind, phone };
+    const d: Donor = { id, businessName, businessType, kind, phone, username: uname, password };
+    setDonorAccounts((prev) => [...prev, d]);
     setDonor(d);
     setCurrentUser({ id, role: "DONOR" });
+    return { ok: true };
+  };
+
+  const loginDonor: NimaCtx["loginDonor"] = (username, password) => {
+    const uname = username.trim().toLowerCase();
+    const account = donorAccounts.find((a) => a.username === uname);
+    if (!account) return { ok: false, message: "No account with that username" };
+    if (account.password !== password) return { ok: false, message: "Wrong password" };
+    setDonor(account);
+    setCurrentUser({ id: account.id, role: "DONOR" });
+    return { ok: true };
   };
 
   const generateBeneficiary = () => {
@@ -275,7 +312,9 @@ export function NimaProvider({ children }: { children: ReactNode }) {
         beneficiary,
         donations,
         claims,
+        donorAccounts,
         registerDonor,
+        loginDonor,
         generateBeneficiary,
         logout,
         createDonation,

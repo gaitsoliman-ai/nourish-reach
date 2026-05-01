@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import DonorOnboarding from "./pages/DonorOnboarding.tsx";
+import DonorLogin from "./pages/DonorLogin.tsx";
 import DonorDashboard from "./pages/DonorDashboard.tsx";
 import DonorCreate from "./pages/DonorCreate.tsx";
 import DonorVerify from "./pages/DonorVerify.tsx";
@@ -25,6 +26,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/donor/onboarding" element={<DonorOnboarding />} />
+            <Route path="/donor/login" element={<DonorLogin />} />
             <Route path="/donor/dashboard" element={<DonorDashboard />} />
             <Route path="/donor/create" element={<DonorCreate />} />
             <Route path="/donor/verify" element={<DonorVerify />} />

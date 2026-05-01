@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useNima } from "@/context/NimaContext";
 import { DonationCard } from "@/components/DonationCard";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 import { LogOut, QrCode, ShieldCheck, Utensils } from "lucide-react";
 
@@ -10,6 +11,7 @@ export default function BeneficiaryHome() {
   const navigate = useNavigate();
   const { beneficiary, donations, claimDonation, logout, myClaim, myActiveDonation } = useNima();
   const [, force] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (!beneficiary) navigate("/");
@@ -49,10 +51,7 @@ export default function BeneficiaryHome() {
             <span className="text-xs font-semibold uppercase tracking-wider opacity-90">Anonymous</span>
           </div>
           <button
-            onClick={() => {
-              logout();
-              navigate("/");
-            }}
+            onClick={() => setConfirmOpen(true)}
             className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center"
             aria-label="Exit"
           >
@@ -109,6 +108,22 @@ export default function BeneficiaryHome() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Exit anonymously?"
+        description={
+          active
+            ? "You have an active claim — leaving now will cancel it and free the meal for someone else."
+            : "Your anonymous code will be cleared. You can always come back and get a new one."
+        }
+        confirmLabel="Exit"
+        destructive
+        onConfirm={() => {
+          logout();
+          navigate("/");
+        }}
+      />
     </MobileFrame>
   );
 }
