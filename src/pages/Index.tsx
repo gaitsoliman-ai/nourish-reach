@@ -17,6 +17,8 @@ const Index = () => {
     else navigate("/donor/onboarding");
   };
 
+  const onLogin = () => navigate("/donor/login");
+
   return (
     <MobileFrame>
       <div className="flex-1 flex flex-col bg-gradient-hero text-white relative overflow-hidden">
@@ -52,6 +54,15 @@ const Index = () => {
               I Want to Donate
             </button>
           </div>
+
+          {!donor && (
+            <button
+              onClick={onLogin}
+              className="mt-3 text-sm text-white/90 underline underline-offset-4 hover:text-white transition"
+            >
+              Already a donor? Log in
+            </button>
+          )}
 
           <div className="flex items-center justify-center gap-2 mt-6 text-xs opacity-80">
             <ShieldCheck className="w-4 h-4" />
