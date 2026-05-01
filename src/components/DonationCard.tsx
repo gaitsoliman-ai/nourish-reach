@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Clock, MapPin, Package, Store, Heart, ChevronDown, ShieldCheck, AlertTriangle, Calendar, Navigation } from "lucide-react";
+import { Clock, MapPin, Package, Store, Heart, ChevronDown, ShieldCheck, AlertTriangle, Calendar, Navigation, CheckCircle2 } from "lucide-react";
 import { Donation } from "@/context/NimaContext";
 import { timeAgo, timeLeft } from "@/lib/time";
 import { emojiForCategory, labelForCategory, labelForPackaging } from "@/lib/foodTaxonomy";
-import { MapPicker, googleDirectionsLink, googleMapsLink } from "@/components/MapPicker";
+import { GoogleMapView, googleDirectionsLink, googleMapsLink } from "@/components/MapPicker";
+
+const FALLBACK_PHOTO = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=70&auto=format&fit=crop";
 
 export function DonationCard({
   donation,
@@ -19,128 +21,155 @@ export function DonationCard({
   const t = timeLeft(donation.expiresAt);
   const isIndividual = donation.donorKind === "INDIVIDUAL";
   const [open, setOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const openTrayWarning = donation.packaging === "OPEN_TRAY";
+  const photo = donation.photo || FALLBACK_PHOTO;
 
   return (
-    <div className="bg-card rounded-2xl p-4 shadow-soft border border-border/60 animate-slide-up">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground flex-shrink-0 ${isIndividual ? "bg-gradient-trust" : "bg-gradient-primary"}`}>
-            {isIndividual ? <Heart className="w-5 h-5" /> : <Store className="w-5 h-5" />}
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-semibold text-sm truncate">
-              {isIndividual ? `From ${donation.businessName}` : donation.businessName}
-            </h3>
-            <p className="text-xs text-muted-foreground">{donation.businessType} · {timeAgo(donation.createdAt)}</p>
-          </div>
-        </div>
+    <div className="bg-card rounded-2xl shadow-soft border border-border/60 animate-slide-up overflow-hidden">
+      {/* Hero photo */}
+      <div className="relative h-32 w-full overflow-hidden bg-muted">
+        <img src={photo} alt={donation.foodDescription} className="w-full h-full object-cover" loading="lazy" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
         <span
-          className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${
-            t.urgent ? "bg-destructive/10 text-destructive" : "bg-tertiary/10 text-tertiary"
+          className={`absolute top-2 right-2 text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap backdrop-blur ${
+            t.urgent ? "bg-destructive/90 text-destructive-foreground" : "bg-tertiary/90 text-tertiary-foreground"
           }`}
         >
           <Clock className="w-3 h-3 inline mr-1 -mt-0.5" />
           {t.label}
         </span>
-      </div>
-
-      {donation.foodCategory && (
-        <div className="flex items-center gap-1.5 mb-2">
-          <span className="text-xs bg-secondary/10 text-secondary font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+        {donation.foodCategory && (
+          <span className="absolute top-2 left-2 text-[11px] bg-white/95 text-foreground font-semibold px-2 py-1 rounded-full inline-flex items-center gap-1">
             <span>{emojiForCategory(donation.foodCategory)}</span>
             {labelForCategory(donation.foodCategory)}
           </span>
+        )}
+        <div className="absolute bottom-2 left-3 right-3 flex items-center gap-2">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground flex-shrink-0 ${isIndividual ? "bg-gradient-trust" : "bg-gradient-primary"}`}>
+            {isIndividual ? <Heart className="w-4 h-4" /> : <Store className="w-4 h-4" />}
+          </div>
+          <div className="min-w-0 text-white drop-shadow">
+            <h3 className="font-bold text-sm truncate">
+              {isIndividual ? `From ${donation.businessName}` : donation.businessName}
+            </h3>
+            <p className="text-[11px] opacity-90">{donation.businessType} · {timeAgo(donation.createdAt)}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <p className="text-sm text-foreground/90 mb-3 line-clamp-2">{donation.foodDescription}</p>
+
+        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3 flex-wrap">
+          <span className="flex items-center gap-1">
+            <Package className="w-3.5 h-3.5" /> {donation.quantity}
+          </span>
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3.5 h-3.5" /> {donation.pickupArea}
+          </span>
           {openTrayWarning && (
-            <span className="text-xs bg-destructive/10 text-destructive font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+            <span className="text-[11px] bg-destructive/10 text-destructive font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" /> Open tray
             </span>
           )}
         </div>
-      )}
 
-      <p className="text-sm text-foreground/90 mb-3 line-clamp-2">{donation.foodDescription}</p>
+        {donation.allergens && donation.allergens.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {donation.allergens.slice(0, 4).map((a) => (
+              <span key={a} className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                ⚠ {a}
+              </span>
+            ))}
+            {donation.allergens.length > 4 && (
+              <span className="text-[10px] text-muted-foreground">+{donation.allergens.length - 4}</span>
+            )}
+          </div>
+        )}
 
-      <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3 flex-wrap">
-        <span className="flex items-center gap-1">
-          <Package className="w-3.5 h-3.5" /> {donation.quantity}
-        </span>
-        <span className="flex items-center gap-1">
-          <MapPin className="w-3.5 h-3.5" /> {donation.pickupArea}
-        </span>
-      </div>
-
-      {donation.allergens && donation.allergens.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {donation.allergens.slice(0, 4).map((a) => (
-            <span key={a} className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-              ⚠ {a}
-            </span>
-          ))}
-          {donation.allergens.length > 4 && (
-            <span className="text-[10px] text-muted-foreground">+{donation.allergens.length - 4}</span>
-          )}
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="text-xs text-secondary font-semibold flex items-center gap-1 mb-3"
-      >
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-        {open ? "Hide details" : "View details & map"}
-      </button>
-
-      {open && (
-        <div className="space-y-2 mb-3 animate-slide-up">
-          {donation.packaging && (
-            <DetailRow icon={ShieldCheck} label="Packaging" value={labelForPackaging(donation.packaging)} />
-          )}
-          {donation.bestBefore && (
-            <DetailRow icon={Calendar} label="Best before" value={new Date(donation.bestBefore).toLocaleString()} />
-          )}
-          {donation.hygieneNotes && (
-            <DetailRow icon={ShieldCheck} label="Hygiene" value={donation.hygieneNotes} />
-          )}
-          {donation.location?.notes && (
-            <DetailRow icon={MapPin} label="Pickup notes" value={donation.location.notes} />
-          )}
-          {donation.location && (
-            <div className="rounded-xl overflow-hidden border border-border">
-              <MapPicker value={donation.location} onChange={() => {}} interactive={false} height={160} />
-              <div className="flex gap-2 p-2 bg-card">
-                <a
-                  href={googleMapsLink(donation.location)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-secondary/10 text-secondary"
-                >
-                  Open in Google Maps
-                </a>
-                <a
-                  href={googleDirectionsLink(donation.location)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-gradient-trust text-accent-foreground inline-flex items-center justify-center gap-1"
-                >
-                  <Navigation className="w-3.5 h-3.5" /> Directions
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {onClaim && (
         <button
-          onClick={onClaim}
-          disabled={disabled || t.expired}
-          className="w-full bg-gradient-primary text-primary-foreground font-semibold py-3 rounded-xl shadow-elevated hover:opacity-95 active:scale-[0.99] transition disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="text-xs text-secondary font-semibold flex items-center gap-1 mb-3"
         >
-          {ctaLabel}
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+          {open ? "Hide details" : "View details & map"}
         </button>
-      )}
+
+        {open && (
+          <div className="space-y-2 mb-3 animate-slide-up">
+            {donation.packaging && (
+              <DetailRow icon={ShieldCheck} label="Packaging" value={labelForPackaging(donation.packaging)} />
+            )}
+            {donation.bestBefore && (
+              <DetailRow icon={Calendar} label="Best before" value={new Date(donation.bestBefore).toLocaleString()} />
+            )}
+            {donation.hygieneNotes && (
+              <DetailRow icon={ShieldCheck} label="Hygiene" value={donation.hygieneNotes} />
+            )}
+            {donation.location?.notes && (
+              <DetailRow icon={MapPin} label="Pickup notes" value={donation.location.notes} />
+            )}
+            {donation.location && (
+              <div className="rounded-xl overflow-hidden border border-border">
+                <GoogleMapView point={donation.location} height={170} />
+                <div className="flex gap-2 p-2 bg-card">
+                  <a
+                    href={googleMapsLink(donation.location)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-secondary/10 text-secondary"
+                  >
+                    Open in Google Maps
+                  </a>
+                  <a
+                    href={googleDirectionsLink(donation.location)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-gradient-trust text-accent-foreground inline-flex items-center justify-center gap-1"
+                  >
+                    <Navigation className="w-3.5 h-3.5" /> Directions
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {onClaim && !confirming && (
+          <button
+            onClick={() => setConfirming(true)}
+            disabled={disabled || t.expired}
+            className="w-full bg-gradient-primary text-primary-foreground font-semibold py-3 rounded-xl shadow-elevated hover:opacity-95 active:scale-[0.99] transition disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+          >
+            {ctaLabel}
+          </button>
+        )}
+
+        {onClaim && confirming && (
+          <div className="space-y-2 animate-scale-in">
+            <div className="text-xs text-center text-muted-foreground bg-muted/50 rounded-lg p-2">
+              Reserving holds this meal for you. Please come pick it up before it expires.
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirming(false)}
+                className="flex-1 bg-card border border-border text-foreground font-semibold py-3 rounded-xl active:scale-[0.99] transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onClaim}
+                disabled={disabled || t.expired}
+                className="flex-[2] bg-gradient-primary text-primary-foreground font-bold py-3 rounded-xl shadow-elevated active:scale-[0.99] transition inline-flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" /> Activate reservation
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
