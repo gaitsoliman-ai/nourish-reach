@@ -3,12 +3,14 @@ import { Plus, ScanLine, LogOut, Package, CheckCircle2, TrendingUp } from "lucid
 import { MobileFrame } from "@/components/MobileFrame";
 import { useNima } from "@/context/NimaContext";
 import { DonationCard } from "@/components/DonationCard";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useEffect, useState } from "react";
 
 export default function DonorDashboard() {
   const { donor, donations, logout } = useNima();
   const navigate = useNavigate();
   const [, force] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (!donor) navigate("/donor/onboarding");
@@ -37,12 +39,9 @@ export default function DonorDashboard() {
             <p className="text-xs opacity-80">{donor.businessType}</p>
           </div>
           <button
-            onClick={() => {
-              logout();
-              navigate("/");
-            }}
+            onClick={() => setConfirmOpen(true)}
             className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition"
-            aria-label="Logout"
+            aria-label="Sign out"
           >
             <LogOut className="w-5 h-5" />
           </button>
@@ -119,6 +118,18 @@ export default function DonorDashboard() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Sign out of this account?"
+        description="You'll need your username and password to log back in. Active donations stay live for everyone on your team."
+        confirmLabel="Sign out"
+        destructive
+        onConfirm={() => {
+          logout();
+          navigate("/");
+        }}
+      />
     </MobileFrame>
   );
 }
