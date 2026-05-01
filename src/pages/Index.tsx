@@ -42,7 +42,7 @@ const Index = () => {
               className="w-full bg-white text-foreground font-bold text-lg py-5 rounded-2xl shadow-2xl hover:scale-[1.02] active:scale-[0.99] transition flex items-center justify-center gap-3"
             >
               <Heart className="w-6 h-6 text-primary" />
-              I Need Food
+              Find a Meal
             </button>
             <button
               onClick={onDonate}
