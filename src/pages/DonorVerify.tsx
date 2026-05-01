@@ -3,20 +3,20 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { TopBar } from "@/components/TopBar";
 import { useNima } from "@/context/NimaContext";
 import { toast } from "sonner";
-import { CheckCircle2, ScanLine } from "lucide-react";
+import { CheckCircle2, ScanLine, Camera } from "lucide-react";
+import { QrScanner } from "@/components/QrScanner";
 
 export default function DonorVerify() {
   const { verifyPickup, donor, donations } = useNima();
   const [pin, setPin] = useState("");
   const [last, setLast] = useState<{ ok: boolean; message: string } | null>(null);
+  const [scanning, setScanning] = useState(false);
 
   if (!donor) return null;
   const pendingForMe = donations.filter((d) => d.donorId === donor.id && d.status === "CLAIMED");
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pin.trim()) return;
-    const res = verifyPickup(pin);
+  const runVerify = (code: string) => {
+    const res = verifyPickup(code);
     setLast(res);
     if (res.ok) {
       toast.success(res.message);
@@ -24,6 +24,12 @@ export default function DonorVerify() {
     } else {
       toast.error(res.message);
     }
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pin.trim()) return;
+    runVerify(pin);
   };
 
   return (
@@ -34,12 +40,23 @@ export default function DonorVerify() {
           <ScanLine className="w-8 h-8 mb-2" />
           <h2 className="font-bold text-lg">Confirm the handover</h2>
           <p className="text-sm opacity-90">
-            Ask the beneficiary to show their 4-digit PIN or QR code.
+            Ask the beneficiary to show their 4-digit PIN or scan their QR with your camera.
           </p>
         </div>
 
+        <button
+          type="button"
+          onClick={() => setScanning(true)}
+          className="w-full mb-4 bg-secondary text-secondary-foreground font-bold py-4 rounded-2xl shadow-elevated active:scale-[0.99] transition inline-flex items-center justify-center gap-2"
+        >
+          <Camera className="w-5 h-5" /> Scan QR with camera
+        </button>
+
+        <div className="flex items-center gap-3 my-2 text-xs text-muted-foreground">
+          <div className="flex-1 h-px bg-border" /> or enter PIN <div className="flex-1 h-px bg-border" />
+        </div>
+
         <form onSubmit={submit}>
-          <label className="text-sm font-semibold mb-2 block">Beneficiary PIN / QR</label>
           <input
             value={pin}
             onChange={(e) => setPin(e.target.value)}
@@ -55,6 +72,16 @@ export default function DonorVerify() {
             Confirm pickup
           </button>
         </form>
+
+        {scanning && (
+          <QrScanner
+            onClose={() => setScanning(false)}
+            onResult={(text) => {
+              setScanning(false);
+              runVerify(text);
+            }}
+          />
+        )}
 
         {last && (
           <div
