@@ -62,7 +62,7 @@ interface PickerProps {
 }
 
 export function MapPicker({ value, onChange, height = 240, interactive = true }: PickerProps) {
-  const center: LatLng = value ?? { lat: 24.7136, lng: 46.6753 }; // default: Riyadh
+  const center: LatLng = value ?? { lat: 25.2854, lng: 51.5310 }; // default: Doha, Qatar
   const requested = useRef(false);
 
   useEffect(() => {
@@ -116,22 +116,24 @@ export function googleDirectionsLink(p: LatLng) {
   return `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
 }
 
-/** Embeddable Google Maps iframe URL (no API key required). */
-export function googleEmbedSrc(p: LatLng, zoom = 16) {
-  const d = 0.005; // ~500m bbox
-  const bbox = `${p.lng - d},${p.lat - d},${p.lng + d},${p.lat + d}`;
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${p.lat},${p.lng}`;
+/**
+ * Live Google Maps embed (no API key) using the public maps?output=embed endpoint.
+ * Drops a fixed pin at the exact lat/lng provided by the donor.
+ */
+export function googleEmbedSrc(p: LatLng, zoom = 17) {
+  return `https://maps.google.com/maps?q=${p.lat},${p.lng}&z=${zoom}&hl=en&output=embed`;
 }
 
-/** A read-only Google-style map view that renders directly from lat/lng. */
-export function GoogleMapView({ point, height = 200 }: { point: LatLng; height?: number }) {
+/** A live Google Maps view with the donor's dropped pin. */
+export function GoogleMapView({ point, height = 220 }: { point: LatLng; height?: number }) {
   return (
     <iframe
-      title="Pickup location map"
+      title="Pickup location — Google Maps"
       src={googleEmbedSrc(point)}
-      style={{ height, width: "100%", border: 0 }}
+      style={{ height, width: "100%", border: 0, display: "block" }}
       loading="lazy"
       referrerPolicy="no-referrer-when-downgrade"
+      allowFullScreen
     />
   );
 }
