@@ -59,8 +59,8 @@ export default function BeneficiaryHome() {
             <LogOut className="w-4 h-4" />
           </button>
         </div>
-        <h1 className="text-2xl font-bold">Food near you</h1>
-        <p className="text-sm opacity-90">No personal data. No questions asked.</p>
+        <h1 className="text-2xl font-bold">Meals shared near you</h1>
+        <p className="text-sm opacity-90">A blessing offered with kindness — yours to enjoy.</p>
       </div>
 
       {active && activeDonation && (
