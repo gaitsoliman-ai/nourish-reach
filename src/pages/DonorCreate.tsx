@@ -11,6 +11,7 @@ import {
   PACKAGING_OPTIONS,
   Packaging,
   COMMON_ALLERGENS,
+  photoForCategory,
 } from "@/lib/foodTaxonomy";
 import { MapPicker, LatLng } from "@/components/MapPicker";
 
@@ -103,6 +104,7 @@ export default function DonorCreate() {
       packaging: packaging as Packaging,
       allergens,
       hygieneNotes: hygiene.trim() || undefined,
+      photo: photoForCategory(category as FoodCategory),
       location: pin
         ? { lat: pin.lat, lng: pin.lng, area: pickupArea.trim(), notes: locNotes.trim() || undefined }
         : undefined,
