@@ -60,7 +60,7 @@ interface NimaCtx {
   registerDonor: (businessName: string, businessType: string, kind?: DonorKind, phone?: string) => void;
   generateBeneficiary: () => BeneficiaryProfile;
   logout: () => void;
-  createDonation: (d: Omit<Donation, "id" | "donorId" | "businessName" | "businessType" | "createdAt" | "status">) => void;
+  createDonation: (d: Omit<Donation, "id" | "donorId" | "businessName" | "businessType" | "createdAt" | "status" | "donorKind" | "donorPhone">) => void;
   claimDonation: (donationId: string) => Claim | null;
   verifyPickup: (pin: string) => { ok: boolean; message: string; donation?: Donation };
   myClaim: () => Claim | null;
