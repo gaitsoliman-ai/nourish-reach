@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -33,6 +33,24 @@ function Recenter({ center }: { center: LatLng }) {
   useEffect(() => {
     map.setView([center.lat, center.lng], map.getZoom());
   }, [center, map]);
+  return null;
+}
+
+// Fixes the "gray tiles" issue when the map mounts inside a hidden / collapsed parent.
+function InvalidateOnMount() {
+  const map = useMap();
+  useEffect(() => {
+    const fix = () => map.invalidateSize();
+    fix();
+    const t1 = setTimeout(fix, 100);
+    const t2 = setTimeout(fix, 400);
+    window.addEventListener("resize", fix);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      window.removeEventListener("resize", fix);
+    };
+  }, [map]);
   return null;
 }
 
@@ -79,6 +97,7 @@ export function MapPicker({ value, onChange, height = 240, interactive = true }:
         {interactive && <ClickHandler onPick={onChange} />}
         {value && <Marker position={[value.lat, value.lng]} icon={icon} />}
         {value && <Recenter center={value} />}
+        <InvalidateOnMount />
       </MapContainer>
       {interactive && (
         <div className="absolute top-2 left-2 right-2 bg-background/95 backdrop-blur text-xs px-3 py-2 rounded-lg shadow pointer-events-none">
@@ -96,3 +115,24 @@ export function googleMapsLink(p: LatLng) {
 export function googleDirectionsLink(p: LatLng) {
   return `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
 }
+
+/** Embeddable Google Maps iframe URL (no API key required). */
+export function googleEmbedSrc(p: LatLng, zoom = 16) {
+  const d = 0.005; // ~500m bbox
+  const bbox = `${p.lng - d},${p.lat - d},${p.lng + d},${p.lat + d}`;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${p.lat},${p.lng}`;
+}
+
+/** A read-only Google-style map view that renders directly from lat/lng. */
+export function GoogleMapView({ point, height = 200 }: { point: LatLng; height?: number }) {
+  return (
+    <iframe
+      title="Pickup location map"
+      src={googleEmbedSrc(point)}
+      style={{ height, width: "100%", border: 0 }}
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+    />
+  );
+}
+
