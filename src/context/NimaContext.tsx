@@ -59,7 +59,16 @@ interface NimaCtx {
   beneficiary: BeneficiaryProfile | null;
   donations: Donation[];
   claims: Claim[];
-  registerDonor: (businessName: string, businessType: string, kind?: DonorKind, phone?: string) => void;
+  donorAccounts: Donor[];
+  registerDonor: (
+    businessName: string,
+    businessType: string,
+    username: string,
+    password: string,
+    kind?: DonorKind,
+    phone?: string
+  ) => { ok: boolean; message?: string };
+  loginDonor: (username: string, password: string) => { ok: boolean; message?: string };
   generateBeneficiary: () => BeneficiaryProfile;
   logout: () => void;
   createDonation: (d: Omit<Donation, "id" | "donorId" | "businessName" | "businessType" | "createdAt" | "status" | "donorKind" | "donorPhone">) => void;
