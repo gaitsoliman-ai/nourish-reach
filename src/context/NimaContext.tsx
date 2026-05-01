@@ -52,6 +52,7 @@ export interface Donation {
   allergens?: string[];
   hygieneNotes?: string;
   location?: PickupLocation;
+  photo?: string; // image URL (hero)
 }
 
 export interface Claim {
