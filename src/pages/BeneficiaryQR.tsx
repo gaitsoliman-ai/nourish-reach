@@ -6,7 +6,7 @@ import { useNima } from "@/context/NimaContext";
 import { QrMock } from "@/components/QrMock";
 import { Clock, MapPin, Store, Navigation } from "lucide-react";
 import { timeLeft } from "@/lib/time";
-import { MapPicker, googleDirectionsLink, googleMapsLink } from "@/components/MapPicker";
+import { GoogleMapView, googleDirectionsLink, googleMapsLink } from "@/components/MapPicker";
 
 export default function BeneficiaryQR() {
   const navigate = useNavigate();
@@ -93,9 +93,9 @@ export default function BeneficiaryQR() {
         </div>
 
         {donation.location && (
-          <div className="bg-white text-foreground rounded-3xl p-3 shadow-2xl mt-4 animate-scale-in">
-            <MapPicker value={donation.location} onChange={() => {}} interactive={false} height={180} />
-            <div className="flex gap-2 mt-3">
+          <div className="bg-white text-foreground rounded-3xl overflow-hidden shadow-2xl mt-4 animate-scale-in">
+            <GoogleMapView point={donation.location} height={200} />
+            <div className="flex gap-2 p-3">
               <a
                 href={googleMapsLink(donation.location)}
                 target="_blank"
