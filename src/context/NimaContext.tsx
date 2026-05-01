@@ -113,6 +113,11 @@ const seedDonations = (): Donation[] => {
       expiresAt: now + 45 * 60 * 1000,
       createdAt: now - 5 * 60 * 1000,
       status: "AVAILABLE",
+      foodCategory: "BAKED",
+      packaging: "WRAPPED",
+      allergens: ["Gluten", "Dairy", "Eggs"],
+      hygieneNotes: "Individually bagged, kept on closed shelf.",
+      location: { lat: 24.7136, lng: 46.6753, area: "Downtown · Main Street", notes: "Side door, ring bell" },
     },
     {
       id: rid(),
