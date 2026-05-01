@@ -11,6 +11,8 @@ export interface Donor {
   businessType: string; // For individuals: "Individual"
   kind: DonorKind;
   phone?: string;
+  username: string;
+  password: string;
 }
 
 export interface BeneficiaryProfile {
