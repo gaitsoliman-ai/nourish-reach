@@ -115,3 +115,24 @@ export function googleMapsLink(p: LatLng) {
 export function googleDirectionsLink(p: LatLng) {
   return `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
 }
+
+/** Embeddable Google Maps iframe URL (no API key required). */
+export function googleEmbedSrc(p: LatLng, zoom = 16) {
+  const d = 0.005; // ~500m bbox
+  const bbox = `${p.lng - d},${p.lat - d},${p.lng + d},${p.lat + d}`;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${p.lat},${p.lng}`;
+}
+
+/** A read-only Google-style map view that renders directly from lat/lng. */
+export function GoogleMapView({ point, height = 200 }: { point: LatLng; height?: number }) {
+  return (
+    <iframe
+      title="Pickup location map"
+      src={googleEmbedSrc(point)}
+      style={{ height, width: "100%", border: 0 }}
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+    />
+  );
+}
+
