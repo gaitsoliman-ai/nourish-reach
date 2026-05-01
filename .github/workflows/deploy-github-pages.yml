@@ -1,6 +1,11 @@
 # Build and deploy the Vite app to GitHub Pages.
-# Repo settings → Pages → Source: GitHub Actions.
-# Live URL: https://<owner>.github.io/nourish-reach/
+#
+# Requirements (or you get 404):
+# 1. Repo → Settings → Pages → Source: GitHub Actions
+# 2. Free GitHub: repository must be PUBLIC for Pages to work (or use GitHub Pro for private).
+# 3. First deploy: approve the "github-pages" environment if GitHub asks.
+#
+# URL: https://<owner>.github.io/<repo>/
 name: Deploy GitHub Pages
 
 on:
@@ -15,7 +20,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -26,9 +31,12 @@ jobs:
         with:
           node-version: "20"
           cache: npm
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
       - run: npm ci
       - name: Build
-        run: npm run build -- --base=/${{ github.event.repository.name }}/
+        run: npm run build -- --base="${{ steps.pages.outputs.base_path }}"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -41,4 +49,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
