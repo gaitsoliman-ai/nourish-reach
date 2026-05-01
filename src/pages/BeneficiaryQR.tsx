@@ -79,7 +79,7 @@ export default function BeneficiaryQR() {
             <p className="font-semibold">{donation.foodDescription}</p>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" /> {donation.distanceKm} km away
+                <MapPin className="w-3.5 h-3.5" /> {donation.pickupArea}
               </span>
               <span className={`flex items-center gap-1 font-semibold ${t.urgent ? "text-destructive" : "text-success"}`}>
                 <Clock className="w-3.5 h-3.5" /> {t.label}
