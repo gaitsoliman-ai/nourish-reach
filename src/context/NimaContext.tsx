@@ -1,9 +1,17 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import type { FoodCategory, Packaging } from "@/lib/foodTaxonomy";
 
 export type Role = "DONOR" | "BENEFICIARY";
 export type DonationStatus = "AVAILABLE" | "CLAIMED" | "COLLECTED";
 export type ClaimStatus = "PENDING" | "COLLECTED";
 export type DonorKind = "BUSINESS" | "INDIVIDUAL";
+
+export interface PickupLocation {
+  lat: number;
+  lng: number;
+  notes?: string; // landmark, building name, "ring bell at side door"
+  area?: string; // neighborhood/landmark label
+}
 
 export interface Donor {
   id: string;
@@ -37,6 +45,13 @@ export interface Donation {
   status: DonationStatus;
   claimedBy?: string;
   pinCode?: string;
+  // New fields
+  foodCategory?: FoodCategory;
+  bestBefore?: number; // optional ISO timestamp for known expiry date
+  packaging?: Packaging;
+  allergens?: string[];
+  hygieneNotes?: string;
+  location?: PickupLocation;
 }
 
 export interface Claim {
@@ -98,6 +113,11 @@ const seedDonations = (): Donation[] => {
       expiresAt: now + 45 * 60 * 1000,
       createdAt: now - 5 * 60 * 1000,
       status: "AVAILABLE",
+      foodCategory: "BAKED",
+      packaging: "WRAPPED",
+      allergens: ["Gluten", "Dairy", "Eggs"],
+      hygieneNotes: "Individually bagged, kept on closed shelf.",
+      location: { lat: 24.7136, lng: 46.6753, area: "Downtown · Main Street", notes: "Side door, ring bell" },
     },
     {
       id: rid(),
@@ -111,6 +131,11 @@ const seedDonations = (): Donation[] => {
       expiresAt: now + 90 * 60 * 1000,
       createdAt: now - 12 * 60 * 1000,
       status: "AVAILABLE",
+      foodCategory: "EVENT_LEFTOVERS",
+      packaging: "CONTAINER",
+      allergens: ["Gluten", "Dairy"],
+      hygieneNotes: "Transferred to closed catering trays right after service.",
+      location: { lat: 24.7600, lng: 46.6500, area: "Marina district", notes: "Hotel staff entrance, parking lot B" },
     },
     {
       id: rid(),
@@ -124,6 +149,11 @@ const seedDonations = (): Donation[] => {
       expiresAt: now + 30 * 60 * 1000,
       createdAt: now - 2 * 60 * 1000,
       status: "AVAILABLE",
+      foodCategory: "PREPARED_HOT",
+      packaging: "CONTAINER",
+      allergens: ["Dairy"],
+      hygieneNotes: "Freshly cooked, sealed in clean containers.",
+      location: { lat: 24.6900, lng: 46.7100, area: "Olive Park neighborhood", notes: "Building 7, ground floor" },
     },
   ];
 };
