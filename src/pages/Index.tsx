@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { flushSync } from "react-dom";
 import { Heart, Store, Sparkles, ShieldCheck } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useNima } from "@/context/NimaContext";
@@ -10,8 +11,8 @@ const Index = () => {
   const { locale, setLocale } = useLocale();
 
   const onNeedFood = () => {
-    if (!beneficiary) generateBeneficiary();
-    navigate("/beneficiary/home");
+    const profile = beneficiary ? beneficiary : flushSync(() => generateBeneficiary());
+    navigate(profile.isVerified ? "/beneficiary/home" : "/beneficiary/verify");
   };
 
   const onDonate = () => {

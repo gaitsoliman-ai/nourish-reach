@@ -55,6 +55,7 @@ const beneficiary = {
   qrCode: "BARAKAH-ben-main-5821",
   pinCode: "5821",
   createdAt: now - 10 * 60 * 1000,
+  isVerified: true,
 };
 
 const donationAvailableA = {
@@ -148,6 +149,17 @@ function donorVerifySuccessState() {
     donations: [{ ...donationClaimedForMainDonor }],
     claims: [{ ...claimForMainDonor }],
     donorAccounts: [{ ...donors.main }],
+  };
+}
+
+function beneficiaryVerificationState() {
+  return {
+    currentUser: { id: beneficiary.id, role: "BENEFICIARY" },
+    donor: null,
+    beneficiary: { ...beneficiary, isVerified: false },
+    donations: [{ ...donationAvailableA }, { ...donationAvailableB }],
+    claims: [],
+    donorAccounts: [{ ...donors.main }, { ...donors.other }],
   };
 }
 
@@ -295,6 +307,7 @@ const scenarios = [
   { id: "donor_verify_error_message", route: "/donor/verify", state: donorVerifySuccessState, action: donorVerifyError },
   { id: "donor_verify_success_message", route: "/donor/verify", state: donorVerifySuccessState, action: donorVerifySuccess },
   { id: "donor_verify_scanner_overlay", route: "/donor/verify", state: donorVerifySuccessState, action: openScannerOverlay },
+  { id: "beneficiary_verify_dignity", route: "/beneficiary/verify", state: beneficiaryVerificationState },
   { id: "beneficiary_home_available", route: "/beneficiary/home", state: beneficiaryAvailableState },
   { id: "beneficiary_home_expanded_details", route: "/beneficiary/home", state: beneficiaryAvailableState, action: openDonationDetails },
   { id: "beneficiary_home_claim_confirm", route: "/beneficiary/home", state: beneficiaryAvailableState, action: openClaimConfirm },

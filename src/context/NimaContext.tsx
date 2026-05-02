@@ -36,6 +36,8 @@ export interface BeneficiaryProfile {
   qrCode: string;
   pinCode: string;
   createdAt: number;
+  /** Dignity verification completed — required before viewing Available Now. */
+  isVerified: boolean;
 }
 
 export interface Donation {
@@ -98,6 +100,7 @@ interface NimaCtx {
   ) => { ok: boolean; message?: string };
   loginDonor: (username: string, password: string) => { ok: boolean; message?: string };
   generateBeneficiary: () => BeneficiaryProfile;
+  markBeneficiaryVerified: () => void;
   logout: () => void;
   createDonation: (d: Omit<Donation, "id" | "donorId" | "businessName" | "businessType" | "createdAt" | "status" | "donorKind" | "donorPhone">) => void;
   claimDonation: (donationId: string) => Claim | null;
@@ -307,7 +310,13 @@ export function NimaProvider({ children }: { children: ReactNode }) {
         const s = JSON.parse(raw);
         if (s.currentUser) setCurrentUser(s.currentUser);
         if (s.donor) setDonor(s.donor);
-        if (s.beneficiary) setBeneficiary(s.beneficiary);
+        if (s.beneficiary) {
+          const raw = s.beneficiary as BeneficiaryProfile & { isVerified?: boolean };
+          setBeneficiary({
+            ...raw,
+            isVerified: raw.isVerified === true,
+          });
+        }
         if (Array.isArray(s.donations) && s.donations.length) {
           setDonations(migrateDonationStatuses(s.donations as Donation[]));
         }
@@ -381,10 +390,15 @@ export function NimaProvider({ children }: { children: ReactNode }) {
       qrCode: `${QR_PREFIX}-${id}-${rpin()}`,
       pinCode: rpin(),
       createdAt: Date.now(),
+      isVerified: false,
     };
     setBeneficiary(profile);
     setCurrentUser({ id, role: "BENEFICIARY" });
     return profile;
+  };
+
+  const markBeneficiaryVerified = () => {
+    setBeneficiary((b) => (b ? { ...b, isVerified: true } : null));
   };
 
   const logout = () => {
@@ -410,7 +424,7 @@ export function NimaProvider({ children }: { children: ReactNode }) {
   };
 
   const claimDonation = (donationId: string): Claim | null => {
-    if (!beneficiary) return null;
+    if (!beneficiary || !beneficiary.isVerified) return null;
     // Prevent double-claim: one active claim at a time
     const active = claims.find(
       (c) => c.beneficiaryId === beneficiary.id && c.status === "PENDING"
@@ -495,6 +509,7 @@ export function NimaProvider({ children }: { children: ReactNode }) {
         registerDonor,
         loginDonor,
         generateBeneficiary,
+        markBeneficiaryVerified,
         logout,
         createDonation,
         claimDonation,

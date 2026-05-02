@@ -31,9 +31,23 @@ function scoreDonation(d: Donation, tokens: string[]): number {
   return score;
 }
 
-export function BeneficiaryAiBot() {
+type BeneficiaryAiBotProps = {
+  /** Controlled open state (e.g. open from “AI Picks” on home). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Hide floating FAB when opening from another control. */
+  hideFab?: boolean;
+};
+
+export function BeneficiaryAiBot({ open: controlledOpen, onOpenChange, hideFab = false }: BeneficiaryAiBotProps = {}) {
   const { donations } = useNima();
-  const [fabOpen, setFabOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const fabOpen = isControlled ? controlledOpen : uncontrolledOpen;
+  const setFabOpen = (v: boolean) => {
+    if (isControlled) onOpenChange?.(v);
+    else setUncontrolledOpen(v);
+  };
   const [input, setInput] = useState("");
   const [thread, setThread] = useState<{ role: "user" | "assistant"; text: string; hits?: Donation[] }[]>([]);
 
@@ -70,15 +84,17 @@ export function BeneficiaryAiBot() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setFabOpen(true)}
-        className="fixed bottom-6 right-6 z-40 md:right-[max(1.5rem,calc(50%-11rem+1.5rem))] flex items-center gap-2 rounded-full bg-ai text-ai-foreground px-5 py-3.5 font-bold text-sm shadow-elevated ring-2 ring-white/80 hover:opacity-95 transition"
-        aria-label="Ask Barakah AI"
-      >
-        <MessageCircle className="w-5 h-5" />
-        Ask Barakah AI
-      </button>
+      {!hideFab && (
+        <button
+          type="button"
+          onClick={() => setFabOpen(true)}
+          className="fixed bottom-24 right-4 z-40 md:right-[max(1.5rem,calc(50%-11rem+1.5rem))] flex items-center gap-2 rounded-full bg-ai text-ai-foreground px-5 py-3.5 font-bold text-sm shadow-elevated ring-2 ring-white/80 hover:opacity-95 transition"
+          aria-label="Ask Barakah AI"
+        >
+          <MessageCircle className="w-5 h-5" />
+          Ask Barakah AI
+        </button>
+      )}
 
       {fabOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center md:p-6 pointer-events-none">

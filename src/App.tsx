@@ -13,10 +13,12 @@ import DonorVerify from "./pages/DonorVerify.tsx";
 import DonorProfile from "./pages/DonorProfile.tsx";
 import BeneficiaryHome from "./pages/BeneficiaryHome.tsx";
 import BeneficiaryQR from "./pages/BeneficiaryQR.tsx";
+import BeneficiaryVerification from "./pages/BeneficiaryVerification.tsx";
 import { NimaProvider } from "./context/NimaContext.tsx";
 import { LocaleProvider } from "./context/LocaleContext.tsx";
 import { ProtectedDonorRoute } from "./components/ProtectedDonorRoute.tsx";
 import { ProtectedBeneficiaryRoute } from "./components/ProtectedBeneficiaryRoute.tsx";
+import { BeneficiaryVerifiedRoute } from "./components/BeneficiaryVerifiedRoute.tsx";
 
 const queryClient = new QueryClient();
 
@@ -43,8 +45,11 @@ const App = () => (
                 <Route path="/donor/profile" element={<DonorProfile />} />
               </Route>
               <Route element={<ProtectedBeneficiaryRoute />}>
-                <Route path="/beneficiary/home" element={<BeneficiaryHome />} />
-                <Route path="/beneficiary/qr" element={<BeneficiaryQR />} />
+                <Route path="/beneficiary/verify" element={<BeneficiaryVerification />} />
+                <Route element={<BeneficiaryVerifiedRoute />}>
+                  <Route path="/beneficiary/home" element={<BeneficiaryHome />} />
+                  <Route path="/beneficiary/qr" element={<BeneficiaryQR />} />
+                </Route>
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
