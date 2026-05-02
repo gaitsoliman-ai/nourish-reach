@@ -94,7 +94,7 @@ export default function BeneficiaryQR() {
                 href={googleDirectionsLink(donation.location)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 text-center text-sm font-semibold py-3 rounded-xl bg-gradient-trust text-white inline-flex items-center justify-center gap-1"
+                className="flex-1 text-center text-sm font-semibold py-3 rounded-xl bg-gradient-warm text-secondary-foreground inline-flex items-center justify-center gap-1"
               >
                 <Navigation className="w-4 h-4" /> Directions
               </a>

@@ -38,10 +38,10 @@ export default function DonorVerify() {
     <MobileFrame>
       <TopBar title="Verify pickup" subtitle="Enter PIN or scan QR" />
       <div className="flex-1 flex flex-col px-5 pb-6 overflow-y-auto">
-        <div className="bg-gradient-trust text-white rounded-2xl p-6 mb-5 shadow-elevated">
+        <div className="bg-gradient-primary text-primary-foreground rounded-2xl p-6 mb-5 shadow-elevated">
           <ScanLine className="w-8 h-8 mb-2" />
           <h2 className="font-bold text-lg">Confirm the handover</h2>
-          <p className="text-sm text-white/90">
+          <p className="text-sm text-primary-foreground/90">
             Ask the beneficiary to show their 4-digit PIN or scan their QR with your camera.
           </p>
         </div>

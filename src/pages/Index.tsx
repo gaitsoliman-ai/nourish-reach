@@ -24,8 +24,8 @@ const Index = () => {
   return (
     <MobileFrame>
       <div className="flex-1 flex flex-col bg-gradient-hero text-white relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -left-20 w-72 h-72 bg-warning/30 rounded-full blur-3xl" />
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/12 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-20 w-72 h-72 bg-primary/25 rounded-full blur-3xl" />
 
         {/* Hero collage */}
         <div className="absolute inset-x-0 top-0 h-72 opacity-40 pointer-events-none">

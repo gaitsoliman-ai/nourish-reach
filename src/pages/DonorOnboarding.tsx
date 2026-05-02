@@ -54,7 +54,11 @@ export default function DonorOnboarding() {
     <MobileFrame>
       <TopBar title="Create donor account" subtitle="Quick — no paperwork" onBack={() => navigate("/")} />
       <form onSubmit={submit} className="flex-1 flex flex-col px-5 pb-6 overflow-y-auto">
-        <div className={`rounded-2xl p-6 mb-6 shadow-elevated text-primary-foreground ${isBiz ? "bg-gradient-primary" : "bg-gradient-trust"}`}>
+        <div
+          className={`rounded-2xl p-6 mb-6 shadow-elevated ${
+            isBiz ? "bg-gradient-primary text-primary-foreground" : "bg-gradient-warm text-secondary-foreground"
+          }`}
+        >
           {isBiz ? <Store className="w-8 h-8 mb-3" /> : <Heart className="w-8 h-8 mb-3" />}
           <h2 className="text-xl font-bold mb-1">
             {isBiz ? "Turn surplus into impact" : "Share a meal, share kindness"}

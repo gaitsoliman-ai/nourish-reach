@@ -30,7 +30,7 @@ export default function DonorLogin() {
     <MobileFrame>
       <TopBar title="Log in" subtitle="Donor account" onBack={() => navigate("/")} />
       <form onSubmit={submit} className="flex-1 flex flex-col px-5 pb-6">
-        <div className="rounded-2xl p-6 mb-6 bg-gradient-trust text-primary-foreground shadow-elevated">
+        <div className="rounded-2xl p-6 mb-6 bg-gradient-primary text-primary-foreground shadow-elevated">
           <LogIn className="w-8 h-8 mb-3" />
           <h2 className="text-xl font-bold mb-1">Welcome back</h2>
           <p className="text-sm opacity-90">Pick up where your team left off.</p>

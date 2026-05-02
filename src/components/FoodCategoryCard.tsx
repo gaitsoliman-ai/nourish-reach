@@ -21,13 +21,13 @@ export function FoodCategoryCard({
       onClick={onSelect}
       className={`relative text-left p-3 rounded-xl border transition-all duration-200 shadow-sm hover:shadow-md ${
         selected
-          ? "border-2 border-[#02db96] bg-[#02db96]/10"
-          : "border border-border bg-card hover:border-[#02db96]/40"
+          ? "border-2 border-primary bg-primary/10"
+          : "border border-border bg-card hover:border-primary/40"
       }`}
     >
       {selected && (
         <span
-          className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#02db96] text-white shadow-sm"
+          className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm"
           aria-hidden
         >
           <Check className="w-3.5 h-3.5 stroke-[3]" />

@@ -117,7 +117,7 @@ export default function DonorDashboard() {
           to="/donor/verify"
           className="bg-card rounded-2xl p-4 shadow-soft ring-1 ring-black/[0.04] hover:shadow-elevated transition flex flex-col items-start gap-2"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-trust flex items-center justify-center text-white">
+          <div className="w-10 h-10 rounded-xl bg-gradient-ai flex items-center justify-center text-ai-foreground">
             <ScanLine className="w-5 h-5" />
           </div>
           <div>

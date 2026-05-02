@@ -46,6 +46,17 @@ export const FOOD_CATEGORIES: FoodCategoryRow[] = [
   },
 ];
 
+/** Quick-select tags on New donation step 1 (speeds up common listings). */
+export const CATEGORY_QUICK_ITEMS: Partial<Record<FoodCategory, string[]>> = {
+  BAKED: ["Croissants", "Muffins", "Sourdough", "Pita Bread"],
+  EVENT_LEFTOVERS: ["Machboos", "Biryani", "Mixed Grill", "Mezza"],
+  PREPARED_HOT: ["Pasta", "Stew", "Rice & Chicken", "Soup"],
+};
+
+export function quickItemsForCategory(c: FoodCategory): string[] {
+  return CATEGORY_QUICK_ITEMS[c] ?? [];
+}
+
 /** Primary card image URL (may 404 until assets exist). */
 export function categoryPublicCardSrc(c: FoodCategory): string {
   return `/assets/categories/${CATEGORY_CARD_BASENAME[c]}.jpg`;

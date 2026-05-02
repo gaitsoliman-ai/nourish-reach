@@ -15,6 +15,7 @@ import {
   photoForCategory,
   categoryPublicCardSrc,
   categoryCardFallbackSrc,
+  quickItemsForCategory,
 } from "@/lib/foodTaxonomy";
 import { FoodCategoryCard } from "@/components/FoodCategoryCard";
 import { MapPicker, LatLng } from "@/components/MapPicker";
@@ -38,6 +39,7 @@ export default function DonorCreate() {
 
   // Step 1 — food
   const [category, setCategory] = useState<FoodCategory | "">("");
+  const [items, setItems] = useState<string[]>([]);
   const [desc, setDesc] = useState("");
   const [qty, setQty] = useState("");
   const [bestBefore, setBestBefore] = useState(""); // datetime-local
@@ -81,7 +83,7 @@ export default function DonorCreate() {
   const validateStep = (): string | null => {
     if (step === 0) {
       if (!category) return "Pick a food type";
-      if (!desc.trim()) return "Describe the food briefly";
+      if (!desc.trim() && items.length === 0) return "Add a short description or pick quick items";
       if (!qty.trim()) return "Add a quantity";
     }
     if (step === 1) {
@@ -106,17 +108,21 @@ export default function DonorCreate() {
     const err = validateStep();
     if (err) return toast.error(err);
     const totalMins = computeMinutes();
+    const cat = category as FoodCategory;
+    const fromItems = items.length > 0 ? items.join(" · ") : "";
+    const foodDescription = [fromItems, desc.trim()].filter(Boolean).join(" — ") || fromItems || desc.trim();
     createDonation({
-      foodDescription: desc.trim(),
+      foodDescription,
+      items: items.length > 0 ? [...items] : undefined,
       quantity: qty.trim(),
       pickupArea: pickupArea.trim(),
       expiresAt: Date.now() + totalMins * 60 * 1000,
-      foodCategory: category as FoodCategory,
+      foodCategory: cat,
       bestBefore: bestBefore ? new Date(bestBefore).getTime() : undefined,
       packaging: packaging as Packaging,
       allergens,
       hygieneNotes: hygiene.trim() || undefined,
-      photo: photoForCategory(category as FoodCategory),
+      photo: photoForCategory(cat),
       location: pin
         ? { lat: pin.lat, lng: pin.lng, area: pickupArea.trim(), notes: locNotes.trim() || undefined }
         : undefined,
@@ -151,7 +157,12 @@ export default function DonorCreate() {
         {step === 0 && (
           <FoodStep
             category={category}
-            setCategory={setCategory}
+            setCategory={(c: FoodCategory) => {
+              setCategory(c);
+              setItems([]);
+            }}
+            items={items}
+            setItems={setItems}
             desc={desc}
             setDesc={setDesc}
             qty={qty}
@@ -200,6 +211,7 @@ export default function DonorCreate() {
         {step === 3 && (
           <ReviewStep
             category={category as FoodCategory}
+            items={items}
             desc={desc}
             qty={qty}
             bestBefore={bestBefore}
@@ -262,12 +274,28 @@ function SectionTitle({ icon: Icon, title, subtitle }: { icon: any; title: strin
   );
 }
 
-function FoodStep(p: any) {
+function FoodStep(p: {
+  category: FoodCategory | "";
+  setCategory: (c: FoodCategory) => void;
+  items: string[];
+  setItems: React.Dispatch<React.SetStateAction<string[]>>;
+  desc: string;
+  setDesc: (v: string) => void;
+  qty: string;
+  setQty: (v: string) => void;
+  bestBefore: string;
+  setBestBefore: (v: string) => void;
+}) {
+  const quick = p.category ? quickItemsForCategory(p.category as FoodCategory) : [];
+  const toggleQuick = (label: string) => {
+    p.setItems((prev) => (prev.includes(label) ? prev.filter((x) => x !== label) : [...prev, label]));
+  };
+
   return (
     <>
       <SectionTitle icon={ClipboardList} title="What food are you sharing?" subtitle="Help people know what to expect." />
       <label className="text-sm font-semibold mb-2 block">Food type</label>
-      <div className="grid grid-cols-2 gap-2 mb-5">
+      <div className="grid grid-cols-2 gap-2 mb-4">
         {FOOD_CATEGORIES.map((c) => (
           <FoodCategoryCard
             key={c.value}
@@ -280,13 +308,39 @@ function FoodStep(p: any) {
         ))}
       </div>
 
+      {quick.length > 0 && (
+        <div className="mb-5">
+          <label className="text-sm font-semibold mb-2 block">Quick select</label>
+          <p className="text-xs text-muted-foreground mb-2">Tap items you’re including (optional — you can still describe below).</p>
+          <div className="flex flex-wrap gap-2">
+            {quick.map((label) => {
+              const on = p.items.includes(label);
+              return (
+                <button
+                  type="button"
+                  key={label}
+                  onClick={() => toggleQuick(label)}
+                  className={`px-3 py-2 rounded-full text-xs font-semibold border transition ${
+                    on
+                      ? "bg-primary text-primary-foreground border-primary shadow-soft"
+                      : "bg-card border-border text-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <label className="text-sm font-semibold mb-2">Description</label>
       <textarea
         value={p.desc}
         onChange={(e) => p.setDesc(e.target.value)}
         rows={3}
         maxLength={300}
-        placeholder="e.g. Fresh bread, croissants, sandwiches..."
+        placeholder="Optional extra detail (e.g. halal kitchen, spice level, pickup notes for food)…"
         className="bg-card border border-border rounded-xl px-4 py-3 mb-5 outline-none focus:ring-2 focus:ring-primary transition resize-none w-full"
       />
 
@@ -493,7 +547,20 @@ function PickupStep(p: any) {
   );
 }
 
-function ReviewStep(p: any) {
+function ReviewStep(p: {
+  category: FoodCategory;
+  items: string[];
+  desc: string;
+  qty: string;
+  bestBefore: string;
+  packaging: Packaging;
+  allergens: string[];
+  hygiene: string;
+  mins: number;
+  pickupArea: string;
+  locNotes: string;
+  pin: LatLng | null;
+}) {
   const cat = FOOD_CATEGORIES.find((c) => c.value === p.category);
   const pkg = PACKAGING_OPTIONS.find((x) => x.value === p.packaging);
   return (
@@ -517,7 +584,21 @@ function ReviewStep(p: any) {
             <span className="font-semibold">{cat?.label}</span>
           </div>
         </Row>
-        <Row label="Description">{p.desc}</Row>
+        {p.items.length > 0 ? (
+          <Row label="What’s inside">
+            <ul className="list-none space-y-1.5">
+              {p.items.map((line) => (
+                <li key={line} className="flex items-start gap-2 text-sm">
+                  <span className="text-primary font-bold leading-none mt-0.5">·</span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            {p.desc.trim() && <p className="text-xs text-muted-foreground mt-2 border-t border-border pt-2">{p.desc}</p>}
+          </Row>
+        ) : (
+          <Row label="Description">{p.desc.trim() || "—"}</Row>
+        )}
         <Row label="Quantity">{p.qty}</Row>
         {p.bestBefore && <Row label="Best before">{new Date(p.bestBefore).toLocaleString()}</Row>}
         <Row label="Packaging">{pkg?.label}</Row>

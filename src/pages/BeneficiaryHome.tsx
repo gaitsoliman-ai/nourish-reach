@@ -44,7 +44,7 @@ export default function BeneficiaryHome() {
 
   return (
     <MobileFrame>
-      <div className="bg-gradient-trust text-white px-5 pt-7 pb-7 rounded-b-3xl">
+      <div className="bg-gradient-primary text-primary-foreground px-5 pt-7 pb-7 rounded-b-3xl">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5" />
@@ -58,8 +58,8 @@ export default function BeneficiaryHome() {
             <LogOut className="w-4 h-4" />
           </button>
         </div>
-        <h1 className="text-2xl font-bold text-white">Meals shared near you</h1>
-        <p className="text-sm text-white/90">A blessing offered with kindness — yours to enjoy.</p>
+        <h1 className="text-2xl font-bold">Meals shared near you</h1>
+        <p className="text-sm opacity-90">A blessing offered with kindness — yours to enjoy.</p>
       </div>
 
       {active && activeDonation && (
