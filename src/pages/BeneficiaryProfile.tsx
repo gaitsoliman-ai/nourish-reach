@@ -8,12 +8,14 @@ import { useNima } from "@/context/NimaContext";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { Bell, Leaf, Shield, UserRound, Wheat } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, ChevronRight, Leaf, Shield, UserRound, Wheat } from "lucide-react";
 
 const MINT = "#02db96";
 const PURPLE = "#892aff";
 
 export default function BeneficiaryProfile() {
+  const navigate = useNavigate();
   const { beneficiary, claims } = useNima();
   const [halal, setHalal] = useState(true);
   const [glutenFree, setGlutenFree] = useState(false);
@@ -65,6 +67,21 @@ export default function BeneficiaryProfile() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">
+          <button
+            type="button"
+            onClick={() => navigate("/beneficiary/partners/qatar-charity")}
+            className="w-full flex items-center gap-4 rounded-3xl border border-gray-100 bg-white p-4 text-left shadow-sm transition hover:border-[#02db96]/30 active:scale-[0.99]"
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#7f1d1d] text-white text-xl font-black shrink-0">
+              Q
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-slate-900">Qatar Charity</p>
+              <p className="text-xs text-slate-500 mt-0.5">Verified partner · Tap for profile</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-gray-300 shrink-0" />
+          </button>
+
           <section>
             <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">
               Your impact

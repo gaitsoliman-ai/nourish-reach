@@ -12,6 +12,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { toast } from "sonner";
 import {
   BadgeCheck,
+  Bell,
+  ChevronRight,
   Filter,
   Heart,
   MapPin,
@@ -22,20 +24,22 @@ import {
   UtensilsCrossed,
   UserRound,
   Soup,
+  ShoppingBasket,
+  ChefHat,
 } from "lucide-react";
+import { StepIndicator } from "@/components/StepIndicator";
+import { SOFT_MINT, SLATE, shadowCard } from "@/lib/barakahDesign";
 import { labelForCategory } from "@/lib/foodTaxonomy";
 
 const MINT = "#02db96";
 const MINT_TEXT = "#0A4D3C";
-const ORANGE = "#FF8A00";
-
 function BarakahStarLogo() {
   return (
     <svg width="36" height="36" viewBox="0 0 40 40" aria-hidden className="shrink-0">
       <defs>
         <linearGradient id="barakahStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor={MINT} />
-          <stop offset="100%" stopColor={ORANGE} />
+          <stop offset="100%" stopColor="#ffc02a" />
         </linearGradient>
       </defs>
       <path
@@ -118,14 +122,16 @@ export default function BeneficiaryHome() {
     <MobileFrame>
       <div className="flex flex-col flex-1 min-h-0 bg-white text-[#0f172a] relative pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]">
         {/* --- Top app bar --- */}
-        <header className="flex items-center justify-between gap-3 px-5 pt-6 pb-4 bg-white shrink-0">
+        <header className="flex items-center justify-between gap-3 px-5 pt-6 pb-3 bg-white shrink-0 border-b border-gray-50">
           <div className="flex items-center gap-2 min-w-0">
             <BarakahStarLogo />
             <div className="flex flex-col min-w-0">
               <span className="font-black text-lg leading-tight" style={{ color: MINT_TEXT }}>
                 Barakah
               </span>
-              <span className="text-[10px] font-medium text-slate-400 truncate">Anonymous</span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#02db96]/90 truncate">
+                Receiver App
+              </span>
             </div>
           </div>
 
@@ -144,6 +150,14 @@ export default function BeneficiaryHome() {
                 </span>
               )}
             </div>
+
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm"
+              aria-label="Notifications"
+            >
+              <Bell className="h-5 w-5" style={{ color: MINT }} />
+            </button>
 
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
@@ -187,29 +201,118 @@ export default function BeneficiaryHome() {
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 space-y-6">
-          {/* --- Hero --- */}
-          <section className="flex flex-col sm:flex-row gap-6 items-center pt-1">
-            <div className="flex-1 min-w-0 text-left space-y-3">
-              <h1 className="text-2xl sm:text-[1.65rem] font-bold leading-tight text-slate-800">
-                Nourishing communities.
-              </h1>
-              <h1 className="text-2xl sm:text-[1.65rem] font-bold leading-tight" style={{ color: ORANGE }}>
-                Sharing barakah.
-              </h1>
-              <p className="text-sm text-gray-500 leading-relaxed max-w-md">
-                Discover meals, give food, and make an impact in your community.
-              </p>
+          <div className="pt-2 pb-1">
+            <p className="text-[11px] font-bold uppercase text-center mb-2 tracking-wide text-slate-500">
+              Finding blessings near you
+            </p>
+            <StepIndicator current={1} total={4} />
+          </div>
+
+          {/* Smart Discovery */}
+          <section
+            className="rounded-3xl border border-gray-100 overflow-hidden"
+            style={{ backgroundColor: SOFT_MINT, boxShadow: shadowCard }}
+          >
+            <div className="flex flex-row items-stretch gap-4 p-5">
+              <div className="flex-1 min-w-0 text-left">
+                <span
+                  className="inline-block rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wide text-white mb-3"
+                  style={{ backgroundColor: MINT }}
+                >
+                  Step 1
+                </span>
+                <h2 className="text-xl font-black leading-tight" style={{ color: SLATE }}>
+                  Smart Discovery
+                </h2>
+                <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                  Find available blessed items near you.
+                </p>
+              </div>
+              <div className="relative w-[120px] shrink-0 flex items-center justify-center" aria-hidden>
+                <div className="absolute inset-0 rounded-full bg-[#02db96]/15 scale-110" />
+                <MapPin className="relative z-10 h-14 w-14 drop-shadow-md" style={{ color: MINT }} strokeWidth={2} />
+              </div>
             </div>
-            <div
-              className="shrink-0 w-[min(100%,200px)] aspect-square relative flex items-end justify-center overflow-hidden rounded-t-full bg-[#02db96]/10"
-              aria-hidden
-            >
-              <img
-                src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=75&auto=format&fit=crop"
-                alt=""
-                className="w-[85%] object-contain drop-shadow-md translate-y-1"
-              />
+          </section>
+
+          {/* Browse Categories */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-black" style={{ color: SLATE }}>
+                Browse Categories
+              </h2>
+              <button
+                type="button"
+                className="text-sm font-bold"
+                style={{ color: MINT }}
+                onClick={() => document.getElementById("nearby-meals")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                See All
+              </button>
             </div>
+            <div className="space-y-3">
+              {[
+                {
+                  title: "Fresh Bakery",
+                  desc: "Bread, pastries, and more.",
+                  count: "120+ items available",
+                  img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=75&auto=format&fit=crop",
+                  Icon: Soup,
+                },
+                {
+                  title: "Hot Meals",
+                  desc: "Warm plates ready to eat.",
+                  count: "85+ items available",
+                  img: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&q=75&auto=format&fit=crop",
+                  Icon: ChefHat,
+                },
+                {
+                  title: "Groceries",
+                  desc: "Produce & pantry essentials.",
+                  count: "64+ items available",
+                  img: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=75&auto=format&fit=crop",
+                  Icon: ShoppingBasket,
+                },
+              ].map((row) => (
+                <button
+                  key={row.title}
+                  type="button"
+                  onClick={() => document.getElementById("nearby-meals")?.scrollIntoView({ behavior: "smooth" })}
+                  className="w-full flex gap-3 items-center rounded-3xl border border-gray-100 bg-white p-3 text-left transition hover:border-[#02db96]/25 active:scale-[0.99]"
+                  style={{ boxShadow: shadowCard }}
+                >
+                  <img src={row.img} alt="" className="h-[72px] w-[72px] rounded-2xl object-cover shrink-0 bg-gray-100" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6faf4]">
+                        <row.Icon className="h-4 w-4" style={{ color: MINT }} />
+                      </span>
+                      <span className="font-bold text-slate-900 truncate">{row.title}</span>
+                    </div>
+                    <p className="text-xs text-slate-500">{row.desc}</p>
+                    <p className="text-[11px] font-bold mt-1" style={{ color: MINT }}>
+                      {row.count}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-300 shrink-0" />
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Community CTA */}
+          <section
+            className="rounded-3xl border border-gray-100 bg-white p-4 flex items-center gap-3"
+            style={{ boxShadow: shadowCard }}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e6faf4] shrink-0">
+              <Heart className="h-6 w-6 fill-[#02db96]/20" style={{ color: MINT }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-slate-900 leading-snug">Share blessings. Strengthen communities.</p>
+              <p className="text-xs text-slate-500 mt-1">Reduce waste with dignity-first rescue.</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-gray-300 shrink-0" />
           </section>
 
           {/* --- Search --- */}
@@ -232,56 +335,15 @@ export default function BeneficiaryHome() {
             </button>
           </div>
 
-          {/* --- Quick actions --- */}
-          <section className="grid grid-cols-4 gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                document.getElementById("nearby-meals")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-[#02db96]/10 py-4 px-2 active:scale-[0.98] transition"
-            >
-              <Soup className="w-7 h-7" style={{ color: MINT }} strokeWidth={2} />
-              <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: MINT_TEXT }}>
-                Meals
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                document.getElementById("nearby-meals")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-orange-500/10 py-4 px-2 active:scale-[0.98] transition"
-            >
-              <MapPin className="w-7 h-7" style={{ color: ORANGE }} strokeWidth={2} />
-              <span className="text-[10px] font-semibold text-center leading-tight text-orange-700">Nearby</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setAiOpen(true)}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-[#02db96]/10 py-4 px-2 active:scale-[0.98] transition ring-1 ring-[#02db96]/20"
-            >
-              <div className="relative">
-                <Sparkles className="w-7 h-7" style={{ color: MINT }} strokeWidth={2} />
-                <Sparkles
-                  className="w-4 h-4 absolute -right-1 -bottom-0.5 opacity-90"
-                  style={{ color: ORANGE }}
-                  strokeWidth={2}
-                />
-              </div>
-              <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: MINT_TEXT }}>
-                AI Picks
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-orange-500/10 py-4 px-2 active:scale-[0.98] transition"
-            >
-              <Heart className="w-7 h-7 fill-orange-500/25" style={{ color: ORANGE }} strokeWidth={2} />
-              <span className="text-[10px] font-semibold text-center leading-tight text-orange-700">Donate</span>
-            </button>
-          </section>
+          {/* AI shortcut */}
+          <button
+            type="button"
+            onClick={() => setAiOpen(true)}
+            className="w-full flex items-center justify-center gap-2 rounded-3xl border border-dashed border-[#02db96]/35 bg-[#e6faf4]/50 py-3 text-sm font-bold text-[#0A4D3C]"
+          >
+            <Sparkles className="h-5 w-5" style={{ color: MINT }} />
+            Ask AI what&apos;s nearby
+          </button>
 
           {/* --- Active claim --- */}
           {active && activeDonation && (

@@ -1,13 +1,13 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Activity, Compass, Home, UserRound } from "lucide-react";
+import { Heart, Radar, Home, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MINT = "#02db96";
 
 const tabs = [
   { path: "/beneficiary/home", label: "Home", Icon: Home },
-  { path: "/beneficiary/explore", label: "Explore", Icon: Compass },
-  { path: "/beneficiary/activity", label: "Activity", Icon: Activity },
+  { path: "/beneficiary/explore", label: "Location Radar", Icon: Radar },
+  { path: "/beneficiary/activity", label: "My Blessings", Icon: Heart },
   { path: "/beneficiary/profile", label: "Profile", Icon: UserRound },
 ] as const;
 

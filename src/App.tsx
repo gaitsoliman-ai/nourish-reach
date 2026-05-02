@@ -11,10 +11,12 @@ import DonorDashboard from "./pages/DonorDashboard.tsx";
 import DonorCreate from "./pages/DonorCreate.tsx";
 import DonorVerify from "./pages/DonorVerify.tsx";
 import DonorProfile from "./pages/DonorProfile.tsx";
+import DonorImpact from "./pages/DonorImpact.tsx";
 import BeneficiaryHome from "./pages/BeneficiaryHome.tsx";
 import BeneficiaryExplore from "./pages/BeneficiaryExplore.tsx";
 import BeneficiaryActivity from "./pages/BeneficiaryActivity.tsx";
 import BeneficiaryProfile from "./pages/BeneficiaryProfile.tsx";
+import BeneficiaryPartnerQatar from "./pages/BeneficiaryPartnerQatar.tsx";
 import BeneficiaryQR from "./pages/BeneficiaryQR.tsx";
 import BeneficiaryVerification from "./pages/BeneficiaryVerification.tsx";
 import { NimaProvider } from "./context/NimaContext.tsx";
@@ -45,6 +47,7 @@ const App = () => (
                 <Route path="/donor/dashboard" element={<DonorDashboard />} />
                 <Route path="/donor/create" element={<DonorCreate />} />
                 <Route path="/donor/verify" element={<DonorVerify />} />
+                <Route path="/donor/impact" element={<DonorImpact />} />
                 <Route path="/donor/profile" element={<DonorProfile />} />
               </Route>
               <Route element={<ProtectedBeneficiaryRoute />}>
@@ -54,6 +57,7 @@ const App = () => (
                   <Route path="/beneficiary/explore" element={<BeneficiaryExplore />} />
                   <Route path="/beneficiary/activity" element={<BeneficiaryActivity />} />
                   <Route path="/beneficiary/profile" element={<BeneficiaryProfile />} />
+                  <Route path="/beneficiary/partners/qatar-charity" element={<BeneficiaryPartnerQatar />} />
                   <Route path="/beneficiary/qr" element={<BeneficiaryQR />} />
                 </Route>
               </Route>

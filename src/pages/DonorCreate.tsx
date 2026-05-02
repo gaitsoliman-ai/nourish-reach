@@ -1,11 +1,25 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { DonorCreatePrefillState } from "@/components/DonorAiBot";
 import { MobileFrame } from "@/components/MobileFrame";
-import { TopBar } from "@/components/TopBar";
 import { useNima } from "@/context/NimaContext";
 import { toast } from "sonner";
-import { Clock, MapPin, ShieldCheck, ClipboardList, Check, Calendar, AlertTriangle } from "lucide-react";
+import {
+  Clock,
+  MapPin,
+  ShieldCheck,
+  Check,
+  Calendar,
+  AlertTriangle,
+  ArrowLeft,
+  Sparkles,
+  Bot,
+  Send,
+  Store,
+  Wheat,
+  Info,
+  CheckCircle2,
+} from "lucide-react";
 import {
   FOOD_CATEGORIES,
   FoodCategory,
@@ -19,6 +33,9 @@ import {
 } from "@/lib/foodTaxonomy";
 import { FoodCategoryCard } from "@/components/FoodCategoryCard";
 import { MapPicker, LatLng } from "@/components/MapPicker";
+import { StepIndicator, StepHeader } from "@/components/StepIndicator";
+import { MINT, PURPLE_AI, PURPLE_SOFT, SLATE, SOFT_MINT, shadowCard } from "@/lib/barakahDesign";
+import { cn } from "@/lib/utils";
 
 const PRESETS = [
   { label: "30 min", mins: 30 },
@@ -27,7 +44,7 @@ const PRESETS = [
   { label: "4 hrs", mins: 240 },
 ];
 
-const STEPS = ["Food", "Safety", "Pickup", "Review"] as const;
+const TOTAL_STEPS = 4;
 
 export default function DonorCreate() {
   const navigate = useNavigate();
@@ -37,26 +54,25 @@ export default function DonorCreate() {
 
   const [step, setStep] = useState(0);
 
-  // Step 1 — food
   const [category, setCategory] = useState<FoodCategory | "">("");
   const [items, setItems] = useState<string[]>([]);
   const [desc, setDesc] = useState("");
   const [qty, setQty] = useState("");
-  const [bestBefore, setBestBefore] = useState(""); // datetime-local
+  const [bestBefore, setBestBefore] = useState("");
 
-  // Step 2 — safety
   const [packaging, setPackaging] = useState<Packaging | "">("");
   const [allergens, setAllergens] = useState<string[]>([]);
   const [customAllergen, setCustomAllergen] = useState("");
   const [hygiene, setHygiene] = useState("");
 
-  // Step 3 — pickup
   const [mins, setMins] = useState(60);
   const [customH, setCustomH] = useState("");
   const [customM, setCustomM] = useState("");
   const [pickupArea, setPickupArea] = useState("");
   const [locNotes, setLocNotes] = useState("");
   const [pin, setPin] = useState<LatLng | null>(null);
+
+  const [chatInput, setChatInput] = useState("");
 
   useEffect(() => {
     const prefill = (location.state as { aiPrefill?: DonorCreatePrefillState } | null)?.aiPrefill;
@@ -66,6 +82,7 @@ export default function DonorCreate() {
     setDesc(prefill.desc);
     setQty(prefill.qty);
     if (prefill.pickupArea) setPickupArea(prefill.pickupArea);
+    setStep(1);
     navigate(location.pathname, { replace: true, state: {} });
   }, [location.state, location.pathname, navigate]);
 
@@ -81,15 +98,15 @@ export default function DonorCreate() {
     setAllergens((prev) => (prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]));
 
   const validateStep = (): string | null => {
-    if (step === 0) {
+    if (step === 1) {
       if (!category) return "Pick a food type";
       if (!desc.trim() && items.length === 0) return "Add a short description or pick quick items";
       if (!qty.trim()) return "Add a quantity";
     }
-    if (step === 1) {
+    if (step === 2) {
       if (!packaging) return "Tell people how it's packaged";
     }
-    if (step === 2) {
+    if (step === 3) {
       if (computeMinutes() < 5) return "Pickup window is too short";
       if (!pickupArea.trim()) return "Add a pickup area name";
       if (!pin) return "Drop a pin on the map for the pickup spot";
@@ -100,8 +117,12 @@ export default function DonorCreate() {
   const next = () => {
     const err = validateStep();
     if (err) return toast.error(err);
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    if (step === 0 && chatInput.trim()) {
+      setDesc((d) => (d.trim() ? d : chatInput.trim()));
+    }
+    setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   };
+
   const back = () => (step === 0 ? navigate("/donor/dashboard") : setStep((s) => s - 1));
 
   const submit = () => {
@@ -131,150 +152,233 @@ export default function DonorCreate() {
     navigate("/donor/dashboard");
   };
 
+  const stepTitles = [
+    { title: "AI Capture", sub: "Tell me what you have to donate. I'll take care of the rest." },
+    { title: "Smart Categorization", sub: "Help us route your donation quickly and safely by confirming these details." },
+    { title: "Safety & allergens", sub: "Be open about packaging and ingredients — it builds trust." },
+    { title: "Pickup & review", sub: "Drop a pin and confirm details before posting." },
+  ];
+
   return (
     <MobileFrame>
-      <TopBar
-        title="New donation"
-        subtitle={`Step ${step + 1} of ${STEPS.length} · ${STEPS[step]}`}
-        onBack={back}
-      />
-
-      {/* Progress */}
-      <div className="px-5 pb-3">
-        <div className="flex gap-1.5">
-          {STEPS.map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 flex-1 rounded-full transition ${
-                i <= step ? "bg-primary" : "bg-border"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="flex-1 flex flex-col px-5 pb-6 overflow-y-auto">
-        {step === 0 && (
-          <FoodStep
-            category={category}
-            setCategory={(c: FoodCategory) => {
-              setCategory(c);
-              setItems([]);
-            }}
-            items={items}
-            setItems={setItems}
-            desc={desc}
-            setDesc={setDesc}
-            qty={qty}
-            setQty={setQty}
-            bestBefore={bestBefore}
-            setBestBefore={setBestBefore}
-          />
-        )}
-
-        {step === 1 && (
-          <SafetyStep
-            packaging={packaging}
-            setPackaging={setPackaging}
-            allergens={allergens}
-            toggleAllergen={toggleAllergen}
-            customAllergen={customAllergen}
-            setCustomAllergen={setCustomAllergen}
-            addCustomAllergen={() => {
-              const v = customAllergen.trim();
-              if (v && !allergens.includes(v)) setAllergens((p) => [...p, v]);
-              setCustomAllergen("");
-            }}
-            hygiene={hygiene}
-            setHygiene={setHygiene}
-          />
-        )}
-
-        {step === 2 && (
-          <PickupStep
-            mins={mins}
-            setMins={setMins}
-            customH={customH}
-            setCustomH={setCustomH}
-            customM={customM}
-            setCustomM={setCustomM}
-            customActive={customActive}
-            pickupArea={pickupArea}
-            setPickupArea={setPickupArea}
-            locNotes={locNotes}
-            setLocNotes={setLocNotes}
-            pin={pin}
-            setPin={setPin}
-          />
-        )}
-
-        {step === 3 && (
-          <ReviewStep
-            category={category as FoodCategory}
-            items={items}
-            desc={desc}
-            qty={qty}
-            bestBefore={bestBefore}
-            packaging={packaging as Packaging}
-            allergens={allergens}
-            hygiene={hygiene}
-            mins={computeMinutes()}
-            pickupArea={pickupArea}
-            locNotes={locNotes}
-            pin={pin}
-          />
-        )}
-
-        <div className="flex-1" />
-
-        <div className="flex gap-3 pt-4">
-          {step > 0 && (
+      <div className="flex flex-col flex-1 min-h-0 bg-white">
+        <header className="shrink-0 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 border-b border-gray-100 bg-white">
+          <div className="flex items-center gap-3 mb-4">
             <button
               type="button"
               onClick={back}
-              className="flex-1 bg-card border border-border text-foreground font-semibold py-4 rounded-2xl active:scale-[0.99] transition"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-gray-50 text-[#0A4D3C]"
+              aria-label="Back"
             >
-              Back
+              <ArrowLeft className="h-5 w-5" />
             </button>
+            <div className="flex-1 min-w-0 text-center pr-10">
+              <p className="text-xs font-bold" style={{ color: MINT }}>
+                Barakah <span className="text-slate-800">Donor App</span>
+              </p>
+            </div>
+          </div>
+          <StepIndicator current={step + 1} total={TOTAL_STEPS} />
+        </header>
+
+        <div className="flex-1 flex flex-col px-5 pb-6 overflow-y-auto">
+          <div className="pt-4 pb-2">
+            <StepHeader
+              step={step + 1}
+              total={TOTAL_STEPS}
+              title={stepTitles[step].title}
+              subtitle={stepTitles[step].sub}
+            />
+          </div>
+
+          {step === 0 && (
+            <AiCaptureStep chatInput={chatInput} setChatInput={setChatInput} />
           )}
-          {step < STEPS.length - 1 ? (
-            <button
-              type="button"
-              onClick={next}
-              className="flex-[2] bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-elevated active:scale-[0.99] transition"
-            >
-              Continue
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={submit}
-              className="flex-[2] bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-elevated active:scale-[0.99] transition flex items-center justify-center gap-2"
-            >
-              <Check className="w-5 h-5" /> Post donation
-            </button>
+
+          {step === 1 && (
+            <SmartCategorizationStep
+              category={category}
+              setCategory={(c: FoodCategory) => {
+                setCategory(c);
+                setItems([]);
+              }}
+              items={items}
+              setItems={setItems}
+              desc={desc}
+              setDesc={setDesc}
+              qty={qty}
+              setQty={setQty}
+              bestBefore={bestBefore}
+              setBestBefore={setBestBefore}
+            />
           )}
+
+          {step === 2 && (
+            <SafetyStep
+              packaging={packaging}
+              setPackaging={setPackaging}
+              allergens={allergens}
+              toggleAllergen={toggleAllergen}
+              customAllergen={customAllergen}
+              setCustomAllergen={setCustomAllergen}
+              addCustomAllergen={() => {
+                const v = customAllergen.trim();
+                if (v && !allergens.includes(v)) setAllergens((p) => [...p, v]);
+                setCustomAllergen("");
+              }}
+              hygiene={hygiene}
+              setHygiene={setHygiene}
+            />
+          )}
+
+          {step === 3 && (
+            <>
+              <PickupStep
+                mins={mins}
+                setMins={setMins}
+                customH={customH}
+                setCustomH={setCustomH}
+                customM={customM}
+                setCustomM={setCustomM}
+                customActive={customActive}
+                pickupArea={pickupArea}
+                setPickupArea={setPickupArea}
+                locNotes={locNotes}
+                setLocNotes={setLocNotes}
+                pin={pin}
+                setPin={setPin}
+              />
+              <div className="mt-8 mb-2">
+                <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">Review</h3>
+              </div>
+              <ReviewStep
+                category={category as FoodCategory}
+                items={items}
+                desc={desc}
+                qty={qty}
+                bestBefore={bestBefore}
+                packaging={packaging as Packaging}
+                allergens={allergens}
+                hygiene={hygiene}
+                mins={computeMinutes()}
+                pickupArea={pickupArea}
+                locNotes={locNotes}
+                pin={pin}
+              />
+            </>
+          )}
+
+          <div className="flex-1 min-h-4" />
+
+          <div className="flex gap-3 pt-4 sticky bottom-0 bg-white pb-[env(safe-area-inset-bottom)]">
+            {step > 0 && (
+              <button
+                type="button"
+                onClick={back}
+                className="flex-1 border border-gray-200 text-slate-800 font-semibold py-4 rounded-3xl active:scale-[0.99] transition bg-white"
+              >
+                Back
+              </button>
+            )}
+            {step < TOTAL_STEPS - 1 ? (
+              <button
+                type="button"
+                onClick={next}
+                className="flex-[2] font-bold py-4 rounded-3xl text-white shadow-lg active:scale-[0.99] transition"
+                style={{ backgroundColor: MINT, boxShadow: shadowCard }}
+              >
+                Continue
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={submit}
+                className="flex-[2] font-bold py-4 rounded-3xl text-white shadow-lg active:scale-[0.99] transition flex items-center justify-center gap-2"
+                style={{ backgroundColor: MINT }}
+              >
+                <Check className="w-5 h-5" /> Post donation
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </MobileFrame>
   );
 }
 
-/* ------------------- STEPS ------------------- */
-
-function SectionTitle({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle?: string }) {
+function AiCaptureStep({
+  chatInput,
+  setChatInput,
+}: {
+  chatInput: string;
+  setChatInput: (s: string) => void;
+}) {
   return (
-    <div className="mb-4">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-5 h-5 text-primary" />
-        <h2 className="font-bold text-lg">{title}</h2>
+    <div className="space-y-4">
+      <div className="flex justify-center">
+        <div
+          className="flex h-14 w-14 items-center justify-center rounded-full"
+          style={{ backgroundColor: PURPLE_SOFT }}
+        >
+          <Sparkles className="h-7 w-7" style={{ color: PURPLE_AI }} />
+        </div>
       </div>
-      {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+
+      <div className="space-y-3">
+        <div className="flex gap-2 justify-end items-end">
+          <div className="max-w-[80%] rounded-3xl rounded-tr-md px-4 py-3 text-sm shadow-sm" style={{ backgroundColor: SOFT_MINT }}>
+            <p className="text-slate-800 font-medium">I have 15 sandwiches</p>
+            <p className="text-[10px] text-slate-500 mt-1 text-right">9:41 AM ✓✓</p>
+          </div>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: SOFT_MINT }}>
+            <Store className="h-4 w-4" style={{ color: MINT }} />
+          </div>
+        </div>
+
+        <div className="flex gap-2 items-start">
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
+            style={{ backgroundColor: PURPLE_AI }}
+          >
+            <Bot className="h-4 w-4" />
+          </div>
+          <div className="max-w-[85%] rounded-3xl rounded-tl-md px-4 py-3 text-sm shadow-sm" style={{ backgroundColor: PURPLE_SOFT }}>
+            <p className="text-slate-800">Noted! Categorizing now.</p>
+            <p className="text-[10px] text-slate-500 mt-1">9:41 AM</p>
+          </div>
+        </div>
+
+        <div className="flex gap-1 pl-12">
+          <span className="inline-block h-2 w-2 rounded-full animate-bounce" style={{ backgroundColor: PURPLE_AI }} />
+          <span className="inline-block h-2 w-2 rounded-full animate-bounce [animation-delay:120ms]" style={{ backgroundColor: PURPLE_AI }} />
+          <span className="inline-block h-2 w-2 rounded-full animate-bounce [animation-delay:240ms]" style={{ backgroundColor: PURPLE_AI }} />
+        </div>
+      </div>
+
+      <div
+        className="flex items-center gap-2 rounded-3xl border border-gray-100 bg-white px-4 py-2 shadow-sm mt-6"
+        style={{ boxShadow: shadowCard }}
+      >
+        <input
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          placeholder="Type your message..."
+          className="flex-1 min-w-0 bg-transparent py-3 text-sm outline-none placeholder:text-gray-400"
+        />
+        <button
+          type="button"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-white shrink-0"
+          style={{ backgroundColor: PURPLE_AI }}
+          aria-label="Send"
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }
 
-function FoodStep(p: {
+function SmartCategorizationStep(p: {
   category: FoodCategory | "";
   setCategory: (c: FoodCategory) => void;
   items: string[];
@@ -291,10 +395,81 @@ function FoodStep(p: {
     p.setItems((prev) => (prev.includes(label) ? prev.filter((x) => x !== label) : [...prev, label]));
   };
 
+  const bakeryPicked = p.category === "BAKED";
+  const glutenNote = p.category === "BAKED" || p.category === "PREPARED_HOT";
+
   return (
-    <>
-      <SectionTitle icon={ClipboardList} title="What food are you sharing?" subtitle="Help people know what to expect." />
-      <label className="text-sm font-semibold mb-2 block">Food type</label>
+    <div className="space-y-5">
+      <div>
+        <p className="text-sm font-bold mb-3" style={{ color: SLATE }}>
+          Suggested Categories
+        </p>
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => p.setCategory("BAKED")}
+            className={cn(
+              "w-full flex items-center gap-3 rounded-3xl p-4 text-left border transition shadow-sm",
+              bakeryPicked ? "border-[#02db96]/40 bg-[#e6faf4]" : "border-gray-100 bg-[#e6faf4]/60"
+            )}
+            style={{ boxShadow: shadowCard }}
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-sm">
+              <Store className="h-5 w-5" style={{ color: MINT }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-slate-900">Bakery</p>
+              <p className="text-xs text-slate-500">Bread, pastries, cakes</p>
+            </div>
+            {bakeryPicked ? (
+              <CheckCircle2 className="h-6 w-6 shrink-0" style={{ color: MINT }} strokeWidth={2.5} />
+            ) : (
+              <div className="h-6 w-6 rounded-full border-2 border-gray-200 shrink-0" />
+            )}
+          </button>
+
+          <div
+            className="flex items-center gap-3 rounded-3xl p-4 border border-gray-100 bg-[#e6faf4]/80"
+            style={{ boxShadow: shadowCard }}
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-sm">
+              <Wheat className="h-5 w-5 text-amber-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-slate-900">Allergens: Gluten</p>
+              <p className="text-xs text-slate-500">Shown when bakery / prepared meals selected</p>
+            </div>
+            {glutenNote ? (
+              <CheckCircle2 className="h-6 w-6 shrink-0" style={{ color: MINT }} strokeWidth={2.5} />
+            ) : (
+              <div className="h-6 w-6 rounded-full border-2 border-gray-200 shrink-0" />
+            )}
+          </div>
+
+          <div
+            className="flex items-center gap-3 rounded-3xl p-4 border border-gray-100 bg-[#e6faf4]/80"
+            style={{ boxShadow: shadowCard }}
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-sm">
+              <ShieldCheck className="h-5 w-5" style={{ color: MINT }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-slate-900">Hygiene Verified</p>
+              <p className="text-xs text-slate-500">Confirm packaging on the next step</p>
+            </div>
+            <CheckCircle2 className="h-6 w-6 shrink-0 text-gray-300" strokeWidth={2} />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-gray-100 bg-white p-3 flex gap-2 text-xs text-slate-600" style={{ boxShadow: shadowCard }}>
+        <Info className="h-4 w-4 shrink-0 mt-0.5 text-slate-400" />
+        These tags help recipients understand and safely accept your donation.
+      </div>
+
+      <label className="text-sm font-semibold mb-2 block" style={{ color: SLATE }}>
+        Full category list
+      </label>
       <div className="grid grid-cols-2 gap-2 mb-4">
         {FOOD_CATEGORIES.map((c) => (
           <FoodCategoryCard
@@ -311,7 +486,6 @@ function FoodStep(p: {
       {quick.length > 0 && (
         <div className="mb-5">
           <label className="text-sm font-semibold mb-2 block">Quick select</label>
-          <p className="text-xs text-muted-foreground mb-2">Tap items you’re including (optional — you can still describe below).</p>
           <div className="flex flex-wrap gap-2">
             {quick.map((label) => {
               const on = p.items.includes(label);
@@ -320,11 +494,11 @@ function FoodStep(p: {
                   type="button"
                   key={label}
                   onClick={() => toggleQuick(label)}
-                  className={`px-3 py-2 rounded-full text-xs font-semibold border transition ${
-                    on
-                      ? "bg-primary text-primary-foreground border-primary shadow-soft"
-                      : "bg-card border-border text-foreground hover:border-primary/50"
-                  }`}
+                  className={cn(
+                    "px-3 py-2 rounded-full text-xs font-semibold border transition",
+                    on ? "text-white border-transparent shadow-sm" : "bg-white border-gray-200 text-slate-800"
+                  )}
+                  style={on ? { backgroundColor: MINT } : undefined}
                 >
                   {label}
                 </button>
@@ -334,45 +508,75 @@ function FoodStep(p: {
         </div>
       )}
 
-      <label className="text-sm font-semibold mb-2">Description</label>
+      <label className="text-sm font-semibold mb-2" style={{ color: SLATE }}>
+        Description
+      </label>
       <textarea
         value={p.desc}
         onChange={(e) => p.setDesc(e.target.value)}
         rows={3}
         maxLength={300}
-        placeholder="Optional extra detail (e.g. halal kitchen, spice level, pickup notes for food)…"
-        className="bg-card border border-border rounded-xl px-4 py-3 mb-5 outline-none focus:ring-2 focus:ring-primary transition resize-none w-full"
+        placeholder="Optional extra detail…"
+        className="bg-white border border-gray-200 rounded-3xl px-4 py-3 mb-5 outline-none focus:ring-2 transition resize-none w-full"
+        style={{ ["--tw-ring-color" as string]: `${MINT}66` }}
       />
 
-      <label className="text-sm font-semibold mb-2">Quantity</label>
+      <label className="text-sm font-semibold mb-2" style={{ color: SLATE }}>
+        Quantity
+      </label>
       <input
         value={p.qty}
         onChange={(e) => p.setQty(e.target.value)}
         placeholder="e.g. 10 portions, 5 meals"
         maxLength={60}
-        className="bg-card border border-border rounded-xl px-4 py-3.5 mb-5 outline-none focus:ring-2 focus:ring-primary transition w-full"
+        className="bg-white border border-gray-200 rounded-3xl px-4 py-3.5 mb-5 outline-none focus:ring-2 transition w-full"
       />
 
-      <label className="text-sm font-semibold mb-2 flex items-center gap-2">
-        <Calendar className="w-4 h-4" /> Best before <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+      <label className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: SLATE }}>
+        <Calendar className="w-4 h-4" /> Best before <span className="text-xs font-normal text-slate-500">(optional)</span>
       </label>
       <input
         type="datetime-local"
         value={p.bestBefore}
         onChange={(e) => p.setBestBefore(e.target.value)}
-        className="bg-card border border-border rounded-xl px-4 py-3.5 mb-1 outline-none focus:ring-2 focus:ring-primary transition w-full"
+        className="bg-white border border-gray-200 rounded-3xl px-4 py-3.5 mb-1 outline-none focus:ring-2 transition w-full"
       />
-      <p className="text-xs text-muted-foreground">If you know an exact expiry/use-by date, set it here.</p>
-    </>
+    </div>
   );
 }
 
-function SafetyStep(p: any) {
+function SectionTitle({ icon: Icon, title, subtitle }: { icon: React.ElementType; title: string; subtitle?: string }) {
+  return (
+    <div className="mb-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className="w-5 h-5" style={{ color: MINT }} />
+        <h2 className="font-bold text-lg" style={{ color: SLATE }}>
+          {title}
+        </h2>
+      </div>
+      {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
+    </div>
+  );
+}
+
+function SafetyStep(p: {
+  packaging: Packaging | "";
+  setPackaging: (v: Packaging) => void;
+  allergens: string[];
+  toggleAllergen: (a: string) => void;
+  customAllergen: string;
+  setCustomAllergen: (v: string) => void;
+  addCustomAllergen: () => void;
+  hygiene: string;
+  setHygiene: (v: string) => void;
+}) {
   return (
     <>
-      <SectionTitle icon={ShieldCheck} title="Safety & allergens" subtitle="Be open about packaging and ingredients — it builds trust." />
+      <SectionTitle icon={ShieldCheck} title="Packaging & allergens" subtitle="Be open — it builds trust." />
 
-      <label className="text-sm font-semibold mb-2 block">How is it packaged?</label>
+      <label className="text-sm font-semibold mb-2 block" style={{ color: SLATE }}>
+        How is it packaged?
+      </label>
       <div className="grid grid-cols-1 gap-2 mb-5">
         {PACKAGING_OPTIONS.map((o) => {
           const isOpen = o.value === "OPEN_TRAY";
@@ -381,26 +585,32 @@ function SafetyStep(p: any) {
               type="button"
               key={o.value}
               onClick={() => p.setPackaging(o.value)}
-              className={`text-left p-3 rounded-xl border transition flex items-start gap-3 ${
-                p.packaging === o.value
-                  ? "border-primary bg-primary/5 shadow-soft"
-                  : "border-border bg-card hover:border-primary/40"
-              }`}
+              className={cn(
+                "text-left p-4 rounded-3xl border transition flex items-start gap-3",
+                p.packaging === o.value ? "border-[#02db96] bg-[#e6faf4]/50 shadow-sm" : "border-gray-100 bg-white hover:border-[#02db96]/40"
+              )}
+              style={{ boxShadow: p.packaging === o.value ? shadowCard : undefined }}
             >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${isOpen ? "bg-destructive/10 text-destructive" : "bg-tertiary/10 text-tertiary"}`}>
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0",
+                  isOpen ? "bg-red-50 text-red-600" : "bg-[#e6faf4] text-[#0A4D3C]"
+                )}
+              >
                 {isOpen ? <AlertTriangle className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-semibold">{o.label}</div>
-                <div className="text-xs text-muted-foreground">{o.hint}</div>
+                <div className="text-sm font-semibold text-slate-900">{o.label}</div>
+                <div className="text-xs text-slate-500">{o.hint}</div>
               </div>
             </button>
           );
         })}
       </div>
 
-      <label className="text-sm font-semibold mb-2 block">Possible allergens</label>
-      <p className="text-xs text-muted-foreground mb-2">Select anything the food may contain.</p>
+      <label className="text-sm font-semibold mb-2 block" style={{ color: SLATE }}>
+        Possible allergens
+      </label>
       <div className="flex flex-wrap gap-2 mb-3">
         {COMMON_ALLERGENS.map((a) => {
           const on = p.allergens.includes(a);
@@ -409,11 +619,11 @@ function SafetyStep(p: any) {
               type="button"
               key={a}
               onClick={() => p.toggleAllergen(a)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
-                on
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card border-border text-foreground hover:border-primary/50"
-              }`}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium border transition",
+                on ? "text-white border-transparent" : "bg-white border-gray-200 text-slate-800"
+              )}
+              style={on ? { backgroundColor: MINT } : undefined}
             >
               {a}
             </button>
@@ -426,45 +636,54 @@ function SafetyStep(p: any) {
           onChange={(e) => p.setCustomAllergen(e.target.value)}
           placeholder="Add another allergen…"
           maxLength={30}
-          className="flex-1 bg-card border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary"
+          className="flex-1 bg-white border border-gray-200 rounded-3xl px-3 py-2.5 text-sm outline-none focus:ring-2"
+          style={{ ["--tw-ring-color" as string]: `${MINT}55` }}
         />
         <button
           type="button"
           onClick={p.addCustomAllergen}
-          className="px-4 rounded-xl bg-secondary text-secondary-foreground font-semibold text-sm"
+          className="px-4 rounded-3xl font-semibold text-sm text-white"
+          style={{ backgroundColor: MINT }}
         >
           Add
         </button>
       </div>
-      {p.allergens.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-5">
-          {p.allergens.map((a: string) => (
-            <span key={a} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-              {a}
-            </span>
-          ))}
-        </div>
-      )}
 
-      <label className="text-sm font-semibold mb-2">Hygiene notes <span className="text-xs font-normal text-muted-foreground">(optional)</span></label>
+      <label className="text-sm font-semibold mb-2" style={{ color: SLATE }}>
+        Hygiene notes <span className="text-xs font-normal text-slate-500">(optional)</span>
+      </label>
       <textarea
         value={p.hygiene}
         onChange={(e) => p.setHygiene(e.target.value)}
         rows={3}
         maxLength={250}
-        placeholder="e.g. Sealed straight after cooking, kept refrigerated, gloves used while handling…"
-        className="bg-card border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary transition resize-none w-full"
+        placeholder="e.g. Sealed straight after cooking…"
+        className="bg-white border border-gray-200 rounded-3xl px-4 py-3 outline-none focus:ring-2 transition resize-none w-full mb-4"
       />
     </>
   );
 }
 
-function PickupStep(p: any) {
+function PickupStep(p: {
+  mins: number;
+  setMins: (n: number) => void;
+  customH: string;
+  setCustomH: (v: string) => void;
+  customM: string;
+  setCustomM: (v: string) => void;
+  customActive: boolean;
+  pickupArea: string;
+  setPickupArea: (v: string) => void;
+  locNotes: string;
+  setLocNotes: (v: string) => void;
+  pin: LatLng | null;
+  setPin: (v: LatLng | null) => void;
+}) {
   return (
     <>
       <SectionTitle icon={MapPin} title="Pickup details" subtitle="Drop a pin so people can find you instantly." />
 
-      <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+      <label className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: SLATE }}>
         <Clock className="w-4 h-4" /> Pickup within
       </label>
       <div className="grid grid-cols-4 gap-2 mb-3">
@@ -477,17 +696,19 @@ function PickupStep(p: any) {
               p.setCustomH("");
               p.setCustomM("");
             }}
-            className={`py-3 rounded-xl text-sm font-medium border transition ${
+            className={cn(
+              "py-3 rounded-3xl text-sm font-medium border transition",
               !p.customActive && p.mins === w.mins
-                ? "bg-primary text-primary-foreground border-primary shadow-soft"
-                : "bg-card border-border text-foreground hover:border-primary/50"
-            }`}
+                ? "text-white border-transparent shadow-md"
+                : "bg-white border-gray-200 text-slate-800"
+            )}
+            style={!p.customActive && p.mins === w.mins ? { backgroundColor: MINT } : undefined}
           >
             {w.label}
           </button>
         ))}
       </div>
-      <div className="text-xs text-muted-foreground mb-1">Or set custom:</div>
+      <div className="text-xs text-slate-500 mb-1">Or set custom:</div>
       <div className="grid grid-cols-2 gap-2 mb-5">
         <div className="relative">
           <input
@@ -497,9 +718,12 @@ function PickupStep(p: any) {
             value={p.customH}
             onChange={(e) => p.setCustomH(e.target.value)}
             placeholder="0"
-            className={`w-full bg-card border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary transition pr-14 ${p.customActive ? "border-primary" : "border-border"}`}
+            className={cn(
+              "w-full bg-white border rounded-3xl px-4 py-3 outline-none focus:ring-2 transition pr-14",
+              p.customActive ? "border-[#02db96]" : "border-gray-200"
+            )}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">hours</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">hours</span>
         </div>
         <div className="relative">
           <input
@@ -509,39 +733,50 @@ function PickupStep(p: any) {
             value={p.customM}
             onChange={(e) => p.setCustomM(e.target.value)}
             placeholder="0"
-            className={`w-full bg-card border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary transition pr-14 ${p.customActive ? "border-primary" : "border-border"}`}
+            className={cn(
+              "w-full bg-white border rounded-3xl px-4 py-3 outline-none focus:ring-2 transition pr-14",
+              p.customActive ? "border-[#02db96]" : "border-gray-200"
+            )}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">mins</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">mins</span>
         </div>
       </div>
 
-      <label className="text-sm font-semibold mb-2">Pickup area name</label>
+      <label htmlFor="pickupAreaInput" className="text-sm font-semibold mb-2 block" style={{ color: SLATE }}>
+        Pickup area name
+      </label>
       <input
+        id="pickupAreaInput"
+        name="pickupAreaInput"
         value={p.pickupArea}
         onChange={(e) => p.setPickupArea(e.target.value)}
         placeholder="e.g. Downtown · Olive Park · Marina"
         maxLength={80}
-        className="bg-card border border-border rounded-xl px-4 py-3.5 mb-4 outline-none focus:ring-2 focus:ring-primary transition w-full"
+        className="bg-white border border-gray-200 rounded-3xl px-4 py-3.5 mb-4 outline-none focus:ring-2 transition w-full"
       />
 
-      <label className="text-sm font-semibold mb-2">Drop a pin on the map</label>
-      <div className="mb-3">
+      <label className="text-sm font-semibold mb-2" style={{ color: SLATE }}>
+        Drop a pin on the map
+      </label>
+      <div className="mb-3 rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
         <MapPicker value={p.pin} onChange={p.setPin} />
       </div>
       {p.pin && (
-        <p className="text-xs text-tertiary mb-3 flex items-center gap-1">
+        <p className="text-xs mb-3 flex items-center gap-1 font-medium" style={{ color: MINT }}>
           <Check className="w-3.5 h-3.5" /> Location set ({p.pin.lat.toFixed(4)}, {p.pin.lng.toFixed(4)})
         </p>
       )}
 
-      <label className="text-sm font-semibold mb-2">Pickup instructions <span className="text-xs font-normal text-muted-foreground">(optional)</span></label>
+      <label className="text-sm font-semibold mb-2" style={{ color: SLATE }}>
+        Pickup instructions <span className="text-xs font-normal text-slate-500">(optional)</span>
+      </label>
       <textarea
         value={p.locNotes}
         onChange={(e) => p.setLocNotes(e.target.value)}
         rows={2}
         maxLength={200}
-        placeholder="e.g. Side door, ring bell, parking on street…"
-        className="bg-card border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary transition resize-none w-full"
+        placeholder="e.g. Side door, ring bell…"
+        className="bg-white border border-gray-200 rounded-3xl px-4 py-3 outline-none focus:ring-2 transition resize-none w-full"
       />
     </>
   );
@@ -564,76 +799,74 @@ function ReviewStep(p: {
   const cat = FOOD_CATEGORIES.find((c) => c.value === p.category);
   const pkg = PACKAGING_OPTIONS.find((x) => x.value === p.packaging);
   return (
-    <>
-      <SectionTitle icon={Check} title="Review & post" subtitle="Quick check before it goes live." />
-
-      <div className="space-y-3">
-        <Row label="Food">
-          <div className="flex items-center gap-2">
-            {cat && (
-              <img
-                src={categoryPublicCardSrc(cat.value)}
-                alt={cat.label}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = categoryCardFallbackSrc(cat.value);
-                }}
-                className="w-8 h-8 rounded-full object-cover shrink-0"
-              />
-            )}
-            <span className="font-semibold">{cat?.label}</span>
-          </div>
-        </Row>
-        {p.items.length > 0 ? (
-          <Row label="What’s inside">
-            <ul className="list-none space-y-1.5">
-              {p.items.map((line) => (
-                <li key={line} className="flex items-start gap-2 text-sm">
-                  <span className="text-primary font-bold leading-none mt-0.5">·</span>
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
-            {p.desc.trim() && <p className="text-xs text-muted-foreground mt-2 border-t border-border pt-2">{p.desc}</p>}
-          </Row>
-        ) : (
-          <Row label="Description">{p.desc.trim() || "—"}</Row>
-        )}
-        <Row label="Quantity">{p.qty}</Row>
-        {p.bestBefore && <Row label="Best before">{new Date(p.bestBefore).toLocaleString()}</Row>}
-        <Row label="Packaging">{pkg?.label}</Row>
-        <Row label="Allergens">
-          {p.allergens.length === 0 ? (
-            <span className="text-muted-foreground">None reported</span>
-          ) : (
-            <div className="flex flex-wrap gap-1">
-              {p.allergens.map((a: string) => (
-                <span key={a} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                  {a}
-                </span>
-              ))}
-            </div>
+    <div className="space-y-3">
+      <Row label="Food">
+        <div className="flex items-center gap-2">
+          {cat && (
+            <img
+              src={categoryPublicCardSrc(cat.value)}
+              alt={cat.label}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = categoryCardFallbackSrc(cat.value);
+              }}
+              className="w-8 h-8 rounded-full object-cover shrink-0"
+            />
           )}
+          <span className="font-semibold text-slate-900">{cat?.label}</span>
+        </div>
+      </Row>
+      {p.items.length > 0 ? (
+        <Row label="What's inside">
+          <ul className="list-none space-y-1.5">
+            {p.items.map((line) => (
+              <li key={line} className="flex items-start gap-2 text-sm text-slate-700">
+                <span className="font-bold mt-0.5" style={{ color: MINT }}>
+                  ·
+                </span>
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+          {p.desc.trim() && <p className="text-xs text-slate-500 mt-2 border-t border-gray-100 pt-2">{p.desc}</p>}
         </Row>
-        {p.hygiene && <Row label="Hygiene">{p.hygiene}</Row>}
-        <Row label="Pickup window">{`${Math.floor(p.mins / 60)}h ${p.mins % 60}m`}</Row>
-        <Row label="Area">{p.pickupArea}</Row>
-        {p.locNotes && <Row label="Instructions">{p.locNotes}</Row>}
-        {p.pin && (
-          <div className="bg-card border border-border rounded-xl p-3">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Map</div>
-            <MapPicker value={p.pin} onChange={() => {}} interactive={false} height={160} />
+      ) : (
+        <Row label="Description">{p.desc.trim() || "—"}</Row>
+      )}
+      <Row label="Quantity">{p.qty}</Row>
+      {p.bestBefore && <Row label="Best before">{new Date(p.bestBefore).toLocaleString()}</Row>}
+      <Row label="Packaging">{pkg?.label}</Row>
+      <Row label="Allergens">
+        {p.allergens.length === 0 ? (
+          <span className="text-slate-500">None reported</span>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {p.allergens.map((a: string) => (
+              <span key={a} className="text-xs px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: MINT }}>
+                {a}
+              </span>
+            ))}
           </div>
         )}
-      </div>
-    </>
+      </Row>
+      {p.hygiene && <Row label="Hygiene">{p.hygiene}</Row>}
+      <Row label="Pickup window">{`${Math.floor(p.mins / 60)}h ${p.mins % 60}m`}</Row>
+      <Row label="Area">{p.pickupArea}</Row>
+      {p.locNotes && <Row label="Instructions">{p.locNotes}</Row>}
+      {p.pin && (
+        <div className="rounded-3xl border border-gray-100 p-3 bg-white overflow-hidden" style={{ boxShadow: shadowCard }}>
+          <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Map</div>
+          <MapPicker value={p.pin} onChange={() => {}} interactive={false} height={160} />
+        </div>
+      )}
+    </div>
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-3">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{label}</div>
+    <div className="rounded-3xl border border-gray-100 p-4 bg-white" style={{ boxShadow: shadowCard }}>
+      <div className="text-xs uppercase tracking-wide text-slate-500 mb-1">{label}</div>
       <div className="text-sm">{children}</div>
     </div>
   );

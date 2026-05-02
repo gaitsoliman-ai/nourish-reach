@@ -196,19 +196,21 @@ function beneficiaryEmptyState() {
   };
 }
 
-async function openDonationDetails(page) {
-  await page.getByRole("button", { name: "View details & map" }).first().click();
-  await page.waitForTimeout(400);
-}
-
-async function openClaimConfirm(page) {
-  await page.getByRole("button", { name: "Claim this" }).first().click();
-  await page.waitForTimeout(400);
+async function scrollToNearbyMeals(page) {
+  await page.locator("#nearby-meals").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
 }
 
 async function openExitDialog(page) {
-  await page.locator('button[aria-label="Exit"]').first().click();
-  await page.waitForTimeout(400);
+  await page.getByRole("button", { name: "Menu" }).click();
+  await page.waitForTimeout(350);
+  await page.getByRole("button", { name: "Exit anonymously" }).click();
+  await page.waitForTimeout(450);
+}
+
+async function switchActivityToHistory(page) {
+  await page.getByRole("button", { name: "History" }).click();
+  await page.waitForTimeout(500);
 }
 
 async function openSignoutDialog(page) {
@@ -239,8 +241,9 @@ async function donorCreateStep1Validation(page) {
 }
 
 async function fillDonorCreateToStep2(page) {
-  await page.locator(".grid.grid-cols-2.gap-2.mb-5 button").first().click();
-  await page.getByPlaceholder("e.g. Fresh bread, croissants, sandwiches...").fill("Fresh sandwiches and bread.");
+  await page.getByRole("button", { name: "Daily Fresh Surplus" }).click();
+  await page.waitForTimeout(300);
+  await page.getByPlaceholder(/Optional extra detail/).fill("Fresh sandwiches and bread.");
   await page.getByPlaceholder("e.g. 10 portions, 5 meals").fill("10 portions");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.waitForTimeout(500);
@@ -296,6 +299,7 @@ const scenarios = [
   { id: "donor_dashboard_active", route: "/donor/dashboard", state: () => donorSessionState({ withActive: true, withClaimed: true }) },
   { id: "donor_dashboard_empty", route: "/donor/dashboard", state: () => donorSessionState({ withActive: false, withClaimed: false }) },
   { id: "donor_dashboard_signout_dialog", route: "/donor/dashboard", state: () => donorSessionState({ withActive: true, withClaimed: false }), action: openSignoutDialog },
+  { id: "donor_impact", route: "/donor/impact", state: () => donorSessionState({ withActive: true, withClaimed: true }) },
   { id: "donor_create_step1_default", route: "/donor/create", state: () => donorSessionState({ withActive: false, withClaimed: false }) },
   { id: "donor_create_step1_validation_error", route: "/donor/create", state: () => donorSessionState({ withActive: false, withClaimed: false }), action: donorCreateStep1Validation },
   { id: "donor_create_step2_safety", route: "/donor/create", state: () => donorSessionState({ withActive: false, withClaimed: false }), action: fillDonorCreateToStep2 },
@@ -309,8 +313,16 @@ const scenarios = [
   { id: "donor_verify_scanner_overlay", route: "/donor/verify", state: donorVerifySuccessState, action: openScannerOverlay },
   { id: "beneficiary_verify_dignity", route: "/beneficiary/verify", state: beneficiaryVerificationState },
   { id: "beneficiary_home_available", route: "/beneficiary/home", state: beneficiaryAvailableState },
-  { id: "beneficiary_home_expanded_details", route: "/beneficiary/home", state: beneficiaryAvailableState, action: openDonationDetails },
-  { id: "beneficiary_home_claim_confirm", route: "/beneficiary/home", state: beneficiaryAvailableState, action: openClaimConfirm },
+  { id: "beneficiary_home_nearby_scrolled", route: "/beneficiary/home", state: beneficiaryAvailableState, action: scrollToNearbyMeals },
+  { id: "beneficiary_explore", route: "/beneficiary/explore", state: beneficiaryAvailableState },
+  { id: "beneficiary_activity_active", route: "/beneficiary/activity", state: beneficiaryActiveClaimState },
+  {
+    id: "beneficiary_activity_history",
+    route: "/beneficiary/activity",
+    state: beneficiaryAvailableState,
+    action: switchActivityToHistory,
+  },
+  { id: "beneficiary_profile", route: "/beneficiary/profile", state: beneficiaryAvailableState },
   { id: "beneficiary_home_active_claim", route: "/beneficiary/home", state: beneficiaryActiveClaimState },
   { id: "beneficiary_home_empty", route: "/beneficiary/home", state: beneficiaryEmptyState },
   { id: "beneficiary_home_exit_dialog", route: "/beneficiary/home", state: beneficiaryAvailableState, action: openExitDialog },
