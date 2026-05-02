@@ -1,5 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { MobileFrame } from "@/components/MobileFrame";
+import {
+  BeneficiaryBottomNav,
+  BENEFICIARY_NAV_BOTTOM_PADDING,
+} from "@/components/BeneficiaryBottomNav";
 import { TopBar } from "@/components/TopBar";
 import { beneficiaryPickupQrValue, useNima } from "@/context/NimaContext";
 import { QrMock } from "@/components/QrMock";
@@ -17,7 +21,9 @@ export default function BeneficiaryQR() {
     return (
       <MobileFrame>
         <TopBar title="Your code" onBack={() => navigate("/beneficiary/home")} />
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+        <div
+          className={`flex-1 flex flex-col items-center justify-center px-6 text-center ${BENEFICIARY_NAV_BOTTOM_PADDING}`}
+        >
           <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-4">
             <Store className="w-8 h-8 text-success" />
           </div>
@@ -32,6 +38,7 @@ export default function BeneficiaryQR() {
             Browse food
           </button>
         </div>
+        <BeneficiaryBottomNav />
       </MobileFrame>
     );
   }
@@ -41,7 +48,9 @@ export default function BeneficiaryQR() {
   return (
     <MobileFrame>
       <TopBar title="Show this at pickup" onBack={() => navigate("/beneficiary/home")} variant="primary" />
-      <div className="flex-1 overflow-y-auto bg-gradient-primary text-primary-foreground px-5 pb-6 -mt-1">
+      <div
+        className={`flex-1 overflow-y-auto bg-gradient-primary text-primary-foreground px-5 pb-6 -mt-1 ${BENEFICIARY_NAV_BOTTOM_PADDING}`}
+      >
         <div className="bg-white text-foreground rounded-3xl p-6 shadow-2xl mt-2 animate-scale-in">
           <div className="flex items-center gap-2 mb-4">
             <Store className="w-5 h-5 text-primary" />
@@ -106,6 +115,7 @@ export default function BeneficiaryQR() {
           Your identity stays private. Only your code is shared.
         </p>
       </div>
+      <BeneficiaryBottomNav />
     </MobileFrame>
   );
 }

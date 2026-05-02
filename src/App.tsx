@@ -12,6 +12,9 @@ import DonorCreate from "./pages/DonorCreate.tsx";
 import DonorVerify from "./pages/DonorVerify.tsx";
 import DonorProfile from "./pages/DonorProfile.tsx";
 import BeneficiaryHome from "./pages/BeneficiaryHome.tsx";
+import BeneficiaryExplore from "./pages/BeneficiaryExplore.tsx";
+import BeneficiaryActivity from "./pages/BeneficiaryActivity.tsx";
+import BeneficiaryProfile from "./pages/BeneficiaryProfile.tsx";
 import BeneficiaryQR from "./pages/BeneficiaryQR.tsx";
 import BeneficiaryVerification from "./pages/BeneficiaryVerification.tsx";
 import { NimaProvider } from "./context/NimaContext.tsx";
@@ -48,6 +51,9 @@ const App = () => (
                 <Route path="/beneficiary/verify" element={<BeneficiaryVerification />} />
                 <Route element={<BeneficiaryVerifiedRoute />}>
                   <Route path="/beneficiary/home" element={<BeneficiaryHome />} />
+                  <Route path="/beneficiary/explore" element={<BeneficiaryExplore />} />
+                  <Route path="/beneficiary/activity" element={<BeneficiaryActivity />} />
+                  <Route path="/beneficiary/profile" element={<BeneficiaryProfile />} />
                   <Route path="/beneficiary/qr" element={<BeneficiaryQR />} />
                 </Route>
               </Route>

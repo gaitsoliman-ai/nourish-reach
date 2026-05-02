@@ -6,16 +6,14 @@ import type { Donation } from "@/context/NimaContext";
 import { useLocale } from "@/context/LocaleContext";
 import { i18n } from "@/lib/i18n";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { BeneficiaryBottomNav } from "@/components/BeneficiaryBottomNav";
 import { BeneficiaryAiBot } from "@/components/BeneficiaryAiBot";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import {
-  Activity,
   BadgeCheck,
-  Compass,
   Filter,
   Heart,
-  Home,
   MapPin,
   Menu,
   QrCode,
@@ -120,21 +118,32 @@ export default function BeneficiaryHome() {
     <MobileFrame>
       <div className="flex flex-col flex-1 min-h-0 bg-white text-[#0f172a] relative pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]">
         {/* --- Top app bar --- */}
-        <header className="flex items-center justify-between px-5 pt-6 pb-4 bg-white shrink-0">
+        <header className="flex items-center justify-between gap-3 px-5 pt-6 pb-4 bg-white shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <BarakahStarLogo />
             <div className="flex flex-col min-w-0">
               <span className="font-black text-lg leading-tight" style={{ color: MINT_TEXT }}>
                 Barakah
               </span>
+              <span className="text-[10px] font-medium text-slate-400 truncate">Anonymous</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <div
+              className="flex items-center gap-1.5"
+              title={beneficiary?.isVerified ? "Your profile is verified" : undefined}
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500">
+                <UserRound className="h-5 w-5" aria-hidden />
+              </div>
               {beneficiary?.isVerified && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-[#02db96] mt-0.5">
-                  <BadgeCheck className="w-3 h-3" aria-hidden />
-                  Verified
+                <span className="inline-flex items-center gap-0.5 rounded-lg bg-[#02db96]/10 px-1.5 sm:px-2 py-1 text-[10px] font-semibold text-[#02db96]">
+                  <BadgeCheck className="h-3 w-3 shrink-0" aria-hidden />
+                  <span>Verified</span>
                 </span>
               )}
             </div>
-          </div>
 
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
@@ -174,6 +183,7 @@ export default function BeneficiaryHome() {
               </div>
             </SheetContent>
           </Sheet>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 space-y-6">
@@ -364,43 +374,7 @@ export default function BeneficiaryHome() {
         </div>
       </div>
 
-      {/* Bottom navigation */}
-      <nav
-        className="fixed bottom-0 left-1/2 z-30 flex w-full max-w-md -translate-x-1/2 items-center justify-around border-t border-gray-100 bg-white px-2 pt-2 shadow-[0_-4px_24px_-8px_rgba(15,23,42,0.06)]"
-        style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
-        aria-label="Main navigation"
-      >
-        <button type="button" className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl" aria-current="page">
-          <Home className="w-6 h-6" style={{ color: MINT }} strokeWidth={2.25} />
-          <span className="text-[10px] font-semibold" style={{ color: MINT }}>
-            Home
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => toast.message("Explore map — coming soon.")}
-          className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-gray-400"
-        >
-          <Compass className="w-6 h-6" strokeWidth={1.75} />
-          <span className="text-[10px] font-medium">Explore</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => toast.message("Activity — coming soon.")}
-          className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-gray-400"
-        >
-          <Activity className="w-6 h-6" strokeWidth={1.75} />
-          <span className="text-[10px] font-medium">Activity</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-gray-400"
-        >
-          <UserRound className="w-6 h-6" strokeWidth={1.75} />
-          <span className="text-[10px] font-medium">Profile</span>
-        </button>
-      </nav>
+      <BeneficiaryBottomNav />
 
       <BeneficiaryAiBot open={aiOpen} onOpenChange={setAiOpen} hideFab />
 
